@@ -1,0 +1,10 @@
+{
+	"connections": [
+		{
+			"host": "localhost",
+			"port": 9200
+		}
+	],
+	"index": "tubvdc-*",
+	"update_interval": 300
+}
