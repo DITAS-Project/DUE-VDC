@@ -1,6 +1,5 @@
 from elasticsearch import Elasticsearch
 import json
-import threading
 from abc import abstractmethod
 
 
@@ -20,13 +19,7 @@ class Metrics:
     def launch_sync_update(self):
         pass
 
-    '''def _search(self, query=None):
+    def _search(self, query=None, size=10):
         if query is None:
-            query = {'match_all': {}}
-        return self.es.search(index=self.index, body={'query': query})
-
-    def get_response_time(self, res):
-        return res['took'] * 0.001
-
-    def get_throughput(self, res):
-        res = self._search()'''
+            query = '*'
+        return self.es.search(index=self.index, q=query, size=size)

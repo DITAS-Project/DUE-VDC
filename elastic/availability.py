@@ -1,7 +1,7 @@
-from metrics import Metrics
 import threading
 import time
 import numpy as np
+from metrics import Metrics
 
 
 class Availability(Metrics):
@@ -9,7 +9,7 @@ class Availability(Metrics):
         super().__init__(conf_path)
 
     def compute_metric(self, interval):
-        sampling_interval, update_interval = interval[0], interval[1]
+        sampling_interval, update_interval = interval
         t = 0
         attempts = 0
         successes = 0
