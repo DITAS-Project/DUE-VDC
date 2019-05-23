@@ -1,0 +1,6 @@
+{
+	"services": [
+		"getAllValuesForBloodTestComponent",
+		"getBloodTestComponentAverage"
+	]
+}
