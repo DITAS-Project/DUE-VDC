@@ -7,10 +7,14 @@
 	],
 	"index": "tubvdc-*",
 	"availability": {
-		"update": [
-				[0.1, 1],
-				[0.2, 10]
-			]
+		"queries": [
+			{
+				"query_content": "*", "update_interval": 0.5
+			},
+			{
+				"query_content": "*", "update_interval": 1
+			}
+		]
 	},
 	"throughput": {
 		"queries": [
