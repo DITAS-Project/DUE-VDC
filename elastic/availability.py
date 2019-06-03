@@ -48,9 +48,9 @@ class Availability(Metrics):
                 for id in infos.keys():
                     availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
                 availabilities = np.array(availabilities)
-                self._write(operationID=service, value=availabilities.mean(), name='availabilityMean', unit='percentage', timestamp=timestamp)
-                self._write(operationID=service, value=availabilities.max(), name='availabilityMax', unit='percentage', timestamp=timestamp)
-                self._write(operationID=service, value=availabilities.min(), name='availabilityMin', unit='percentage', timestamp=timestamp)
+                self._write(operationID=service, value=availabilities.mean(), name='availabilityMean', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
+                self._write(operationID=service, value=availabilities.max(), name='availabilityMax', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
+                self._write(operationID=service, value=availabilities.min(), name='availabilityMin', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
             print()
 
     def launch_sync_update(self):

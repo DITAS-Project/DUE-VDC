@@ -37,9 +37,9 @@ class ResponseTime(Metrics):
                 for id in infos.keys():
                     resp_times.append(infos[id]['response_time'] * 1e-9)
                 resp_times = np.array(resp_times)
-                self._write(operationID=service, value=resp_times.mean(), name='responseTimeMean', unit='seconds', timestamp=timestamp)
-                self._write(operationID=service, value=resp_times.max(), name='responseTimeMax', unit='seconds', timestamp=timestamp)
-                self._write(operationID=service, value=resp_times.min(), name='responseTimeMin', unit='seconds', timestamp=timestamp)
+                self._write(operationID=service, value=resp_times.mean(), name='responseTimeMean', unit='seconds', timestamp=timestamp, delta=update_interval, hits=len(resp_times))
+                self._write(operationID=service, value=resp_times.max(), name='responseTimeMax', unit='seconds', timestamp=timestamp, delta=update_interval, hits=len(resp_times))
+                self._write(operationID=service, value=resp_times.min(), name='responseTimeMin', unit='seconds', timestamp=timestamp, delta=update_interval, hits=len(resp_times))
             print()
 
     def launch_sync_update(self):

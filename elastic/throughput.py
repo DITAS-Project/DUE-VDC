@@ -39,9 +39,9 @@ class Throughput(Metrics):
                 for id in infos.keys():
                     throughputs.append((infos[id]['response_length'] / infos[id]['request_time']) * 1e9)
                 throughputs = np.array(throughputs)
-                self._write(operationID=service, value=throughputs.mean(), name='throughputMean', unit='BytesPerSecond', timestamp=timestamp)
-                self._write(operationID=service, value=throughputs.max(), name='throughputMax', unit='BytesPerSecond', timestamp=timestamp)
-                self._write(operationID=service, value=throughputs.min(), name='throughputMin', unit='BytesPerSecond', timestamp=timestamp)
+                self._write(operationID=service, value=throughputs.mean(), name='throughputMean', unit='BytesPerSecond', timestamp=timestamp, delta=update_interval, hits=len(throughputs))
+                self._write(operationID=service, value=throughputs.max(), name='throughputMax', unit='BytesPerSecond', timestamp=timestamp, delta=update_interval, hits=len(throughputs))
+                self._write(operationID=service, value=throughputs.min(), name='throughputMin', unit='BytesPerSecond', timestamp=timestamp, delta=update_interval, hits=len(throughputs))
             print()
 
     def launch_sync_update(self):

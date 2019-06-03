@@ -1,6 +1,7 @@
 from elasticsearch import Elasticsearch
 import json
 import random
+import uuid
 from abc import ABC, abstractmethod
 
 
@@ -36,15 +37,17 @@ class Metrics(ABC):
             query = '*'
         return self.es.search(index=self.index, q=query, size=size)
 
-    def _write(self, operationID, value, name, unit, timestamp):
+    def _write(self, operationID, value, name, unit, timestamp, delta, hits):
         body = {
             'meter': {
                 'operationID': operationID,
                 'value': value,
                 'name': name,
                 'unit': unit,
-                'timestamp': timestamp
+                'timestamp': timestamp,
+                'delta': delta,
+                'hits': hits
             }
         }
         index = self.index.split('*')[0] + timestamp.split('T')[0]
-        self.es.create(index=index, id=random.randint(0, 99999999), body=body)
+        self.es.create(index=index, id=str(uuid.uuid4()), body=body)
