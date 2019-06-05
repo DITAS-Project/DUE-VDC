@@ -1,5 +1,7 @@
 import json
+import requests
 from elasticsearch import Elasticsearch
+from flask import Response
 
 TEMP_SERVICES_FILE = '../conf/services.json'
 TEMP_CONF_FILE = '../conf/conf.json'
@@ -44,3 +46,26 @@ def body_formatter(meter, value, name, unit, timestamp, delta, delta_unit, hits)
         'hits': hits
     }
     return body
+
+
+def es_api_uri():
+    with open(TEMP_CONF_FILE) as conf_file:
+        conf_data = json.load(conf_file)
+    host = conf_data['connections'][0]['host']
+    port = conf_data['connections'][0]['port']
+    index = conf_data['index']
+
+    uri = 'http://'+host+':'+str(port)+'/'+index+'/_search'
+    return uri
+
+# Returns a dictionary
+def es_rest(uri=es_api_uri(), body={}):
+    query = json.dumps(body)
+    response = requests.post(uri, json=body)
+    results = json.loads(response.text)
+    return results
+
+
+def json_response_formatter(dictionary):
+    js = json.dumps(dictionary)
+    return Response(js, status=200, mimetype='application/json')

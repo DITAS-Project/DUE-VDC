@@ -67,10 +67,16 @@ def avail_of_minutes(minutes):
 
         ret_dict[service] = dicti
 
-    js = json.dumps(ret_dict)
-    resp = Response(js, status=200, mimetype='application/json')
+    return json_response_formatter(ret_dict)
 
-    return resp
+@avail_page.route('/test')
+def test():
+    dicti = {
+        "_source": ["request.id"],
+        "sort": [
+            {"_index": {"order": "desc"}}
+        ]
+    }
 
-
-
+    es_resp = es_rest(body=dicti)
+    return json_response_formatter(es_resp)
