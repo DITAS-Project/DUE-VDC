@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 import numpy as np
-from flask import Blueprint
+from flask import Blueprint, Response
 from utils import *
 
 avail_page = Blueprint('availability', __name__)
@@ -22,7 +22,7 @@ def avail_of_minutes(minutes):
     #timestamp, time_window = format_time_window(t0, t1)
     timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     query_content = '*'
-    ret_strings = []
+    ret_dict = {}
     for service in services:
         print(service)
         query_ids = query_content + f' AND request.operationID:{service} AND @timestamp:{time_window}'
@@ -53,20 +53,24 @@ def avail_of_minutes(minutes):
             availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
         availabilities = np.array(availabilities)
 
-        avail_mean = body_formatter(operationID=service, value=availabilities.mean(), name='availabilityMean', unit='percentage',
-                        timestamp=timestamp, delta=minutes, hits=len(availabilities))
-        avail_max = body_formatter(operationID=service, value=availabilities.max(), name='availabilityMax', unit='percentage',
-                    timestamp=timestamp, delta=minutes, hits=len(availabilities))
-        avail_min = body_formatter(operationID=service, value=availabilities.min(), name='availabilityMin', unit='percentage',
-                    timestamp=timestamp, delta=minutes, hits=len(availabilities))
+        avail_mean = body_formatter(meter='mean', value=availabilities.mean(), name='availability', unit='percentage',
+                        timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
+        avail_max = body_formatter(meter='max', value=availabilities.max(), name='availability', unit='percentage',
+                    timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
+        avail_min = body_formatter(meter='min', value=availabilities.min(), name='availability', unit='percentage',
+                    timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
 
-        serv_str = {'Mean': avail_mean,
-                    'Max': avail_max,
-                    'Min': avail_min}
+        dicti={}
+        dicti['mean'] = avail_mean
+        dicti['max'] = avail_max
+        dicti['min'] = avail_min
 
-        ret_strings.append(serv_str)
+        ret_dict[service] = dicti
 
-    return json.dumps(ret_strings)
+    js = json.dumps(ret_dict)
+    resp = Response(js, status=200, mimetype='application/json')
+
+    return resp
 
 
 

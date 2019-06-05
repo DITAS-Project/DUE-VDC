@@ -33,16 +33,14 @@ def es_query(query=None, size=10):
     return es.search(index=TEMP_INDEX, q=query, size=size)
 
 
-def body_formatter(operationID, value, name, unit, timestamp, delta, hits):
+def body_formatter(meter, value, name, unit, timestamp, delta, delta_unit, hits):
     body = {
-        'meter': {
-            'operationID': operationID,
-            'value': value,
-            'name': name,
-            'unit': unit,
-            'timestamp': timestamp,
-            'delta': delta,
-            'hits': hits
-        }
+        'name': name,
+        'value': value,
+        'unit': unit,
+        'timestamp': timestamp,
+        'delta': delta,
+        'delta_unit': delta_unit,
+        'hits': hits
     }
     return body
