@@ -1,5 +1,4 @@
 import json
-from datetime import datetime, timedelta
 import numpy as np
 from flask import Blueprint, Response
 from utils import *
@@ -69,6 +68,7 @@ def all_avail_of_minutes(minutes):
         ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
     return json_response_formatter(ret_dict)
 
+
 @avail_page.route('/<string:service>/time/<int:minutes>')
 def service_avail_of_minutes(service, minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
@@ -77,11 +77,6 @@ def service_avail_of_minutes(service, minutes):
     ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
     return json_response_formatter(ret_dict)
 
-# Compute time window of interest for the query
-def get_timestamp_timewindow(minutes):
-    t0 = datetime.now()
-    t1 = t0 - timedelta(minutes=minutes)
-    return format_time_window(t0, t1)
 
 @avail_page.route('/test')
 def test():

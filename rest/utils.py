@@ -1,5 +1,6 @@
 import json
 import requests
+from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 from flask import Response
 
@@ -16,6 +17,13 @@ def read_services_from_file(filepath):
 
 def get_services():
     return read_services_from_file(TEMP_SERVICES_FILE)
+
+
+# Compute time window of interest for the query
+def get_timestamp_timewindow(minutes):
+    t0 = datetime.now()
+    t1 = t0 - timedelta(minutes=minutes)
+    return format_time_window(t0, t1)
 
 
 def format_time_window(t0, t1):
