@@ -3,10 +3,14 @@
 This is the module which exposes the REST API providing the performance metrics for services and data. 
 
 ### Elastic Search source configuration
-The configuration information of the instance of Elastic Search containing the data source can be provided
-in the `conf/conf.json` file in the main root directory
+The data source is an instance of Elastic Search. The configuration information of the server running such instance
+can be provided in the `conf/conf.json` file in the main root directory in the object `connections`.
 
-### API
+### Running
+
+To run the REST API is enough to launch the script `run_api.sh`
+
+### REST API docs
 
 The API structure is: <br>
 
@@ -21,3 +25,7 @@ The API structure is: <br>
 ### GET/POST DOC
 
 (Here goes the documentation for the implemented GET/POST methods)
+
+##### TODO 
+
+(Here goes the list of GET/POST methods not yet implemented)
