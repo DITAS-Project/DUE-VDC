@@ -27,47 +27,48 @@ def get_response_time(service, timestamp, time_window, minutes):
 		resp_times.append(infos[id]['response_time'] * 1e-9)
 	resp_times = np.array(resp_times)
 	
-	resp_time_mean = body_formatter(meter='mean', value=resp_times.mean(), name='responseTimeMean', unit='seconds', 
+	resp_time_mean = body_formatter(meter='mean', value=resp_times.mean(), name='responseTime', unit='seconds',
 									timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
-	resp_time_max = body_formatter(meter='max', value=resp_times.max(), name='responseTimeMax', unit='seconds', 
+	resp_time_max = body_formatter(meter='max', value=resp_times.max(), name='responseTime', unit='seconds',
 								   timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
-	resp_time_min = body_formatter(meter='min', value=resp_times.min(), name='responseTimeMin', unit='seconds', 
+	resp_time_min = body_formatter(meter='min', value=resp_times.min(), name='responseTime', unit='seconds',
 								   timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
 	
 	dicti = {}
-    dicti['mean'] = resp_time_mean
-    dicti['max'] = resp_time_max
-    dicti['min'] = resp_time_min
+	dicti['mean'] = resp_time_mean
+	dicti['max'] = resp_time_max
+	dicti['min'] = resp_time_min
 
-    return dicti
+	return dicti
 
 @resp_time_page.route('/time/<int:minutes>')
 def all_resp_times_of_minutes(minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    # Read list of services, of which to compute the metric
-    services = get_services()
-    ret_dict = {}
-    for service in services:
-        ret_dict[service] = get_response_time(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+	# timestamp, time_window = get_timestamp_timewindow(minutes)
+	timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+	# Read list of services, of which to compute the metric
+	services = get_services()
+	ret_dict = {}
+	for service in services:
+		ret_dict[service] = get_response_time(service, timestamp, time_window, minutes)
+		return json_response_formatter(ret_dict)
 
 
 @resp_time_page.route('/<string:service>/time/<int:minutes>')
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    ret_dict = {}
-    ret_dict[service] = get_resp_time(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+def service_avail_of_minutes(service, minutes):
+	# timestamp, time_window = get_timestamp_timewindow(minutes)
+	timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+	ret_dict = {}
+	ret_dict[service] = get_resp_time(service, timestamp, time_window, minutes)
+	return json_response_formatter(ret_dict)
 
 @resp_time_page.route('/test')
 def test():
-    dicti = {
+	dicti = {
         "_source": ["request.id"],
         "sort": [
             {"_index": {"order": "desc"}}
         ]
-    }
+	}
 
-    es_resp = es_rest(body=dicti)
-    return json_response_formatter(es_resp)
+	es_resp = es_rest(body=dicti)
+	return json_response_formatter(es_resp)
