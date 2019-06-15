@@ -77,3 +77,9 @@ def es_rest(uri=es_api_uri(), body={}):
 def json_response_formatter(dictionary):
     js = json.dumps(dictionary)
     return Response(js, status=200, mimetype='application/json')
+
+def parse_timestamp(str_ts):
+    s_date, s_time = str_ts.split("T")
+    [year, month, day] = [int(ss) for ss in s_date.split("-")]
+    [hours, minutes, seconds] = [int(ss) for ss in s_time.split(":")]
+    return datetime(year=y, month=mo, day=d, hour=h, minute=mi, second=s)

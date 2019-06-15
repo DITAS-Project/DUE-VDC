@@ -20,11 +20,15 @@ def get_service_avail(service, timestamp, time_window, minutes):
     res = es_query(query=query_ids, size=total_hits)
     availabilities = []
     infos = {}
+    oldest_ts = datetime.now()
     for hit in res['hits']['hits']:
         source = hit['_source']
         id = source['request.id']
         if id not in infos.keys():
             infos[id] = {'successes': 0, 'attempts': 0}
+        # TODO here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+        # TODO then change the delta as delta = timestamp - oldest_ts
+        
         # TODO: check if it always contains a request.length attribute, it should
         request_length = source['request.length']
         if request_length > 0:
