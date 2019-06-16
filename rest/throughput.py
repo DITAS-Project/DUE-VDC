@@ -1,16 +1,12 @@
-import json
+import pytz
 import numpy as np
+from datetime import datetime
 from flask import Blueprint
 from rest import utils as ut
 
 throughput_page = Blueprint('throughput', __name__)
 
 QUERY_CONTENT = '*'
-
-
-@throughput_page.route('/')
-def hello():
-    return json.dumps({'msg': "I'm throughput file!"})
 
 
 # return a dictionary
@@ -22,6 +18,7 @@ def get_service_throughput(service, timestamp, time_window, minutes):
     res = ut.es_query(query=query_ids, size=total_hits)
     throughputs = []
     infos = {}
+    oldest_ts = datetime.now(pytz.utc)
     for hit in res['hits']['hits']:
         source = hit['_source']
         id = source['request.id']
@@ -33,17 +30,26 @@ def get_service_throughput(service, timestamp, time_window, minutes):
         if 'request.requestTime' in source:
             request_time = source['request.requestTime']
             infos[id]['request_time'] += request_time
+
+        # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+        ts = ut.parse_timestamp(source['@timestamp'])
+        if ts < oldest_ts:
+            oldest_ts = ts
+
     for id in infos.keys():
         throughputs.append((infos[id]['response_length'] / infos[id]['request_time']) * 1e9)
     throughputs = np.array(throughputs)
 
+    # Delta is computed from now to the oldest hit found
+    delta = (datetime.now(pytz.utc) - oldest_ts).total_seconds() / 60
+
     throughput_mean = ut.body_formatter(meter='mean', value=throughputs.mean(), name='throughput', unit='BytesPerSecond',
-                                        timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+                                        timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(throughputs))
     throughput_max = ut.body_formatter(meter='max', value=throughputs.max(), name='throughput', unit='BytesPerSecond',
-                                       timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+                                       timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(throughputs))
 
     throughput_min = ut.body_formatter(meter='min', value=throughputs.min(), name='throughput', unit='BytesPerSecond',
-                                       timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+                                       timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(throughputs))
 
     dicti = {}
     dicti['mean'] = throughput_mean

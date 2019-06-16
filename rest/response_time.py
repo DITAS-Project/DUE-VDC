@@ -1,11 +1,13 @@
-import json
+import pytz
 import numpy as np
+from datetime import datetime
 from flask import Blueprint
 from rest import utils as ut
 
 resp_time_page = Blueprint('response_time', __name__)
 
 QUERY_CONTENT = '*'
+
 
 #return a dictionary
 def get_response_time(service, timestamp, time_window, minutes):
@@ -15,6 +17,7 @@ def get_response_time(service, timestamp, time_window, minutes):
 	res = ut.es_query(query=query_ids, size=total_hits)
 	resp_times = []
 	infos = {}
+	oldest_ts = datetime.now(pytz.utc)
 	for hit in res['hits']['hits']:
 		source = hit['_source']
 		id = source['request.id']
@@ -23,16 +26,25 @@ def get_response_time(service, timestamp, time_window, minutes):
 		if 'request.requestTime' in source:
 			response_time = source['request.requestTime']
 			infos[id]['response_time'] += response_time
+
+		# Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+		ts = ut.parse_timestamp(source['@timestamp'])
+		if ts < oldest_ts:
+			oldest_ts = ts
+
 	for id in infos.keys():
 		resp_times.append(infos[id]['response_time'] * 1e-9)
 	resp_times = np.array(resp_times)
-	
+
+	# Delta is computed from now to the oldest hit found
+	delta = (datetime.now(pytz.utc) - oldest_ts).total_seconds() / 60
+
 	resp_time_mean = ut.body_formatter(meter='mean', value=resp_times.mean(), name='responseTime', unit='seconds',
-									   timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
+									   timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(resp_times))
 	resp_time_max = ut.body_formatter(meter='max', value=resp_times.max(), name='responseTime', unit='seconds',
-									  timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
+									  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(resp_times))
 	resp_time_min = ut.body_formatter(meter='min', value=resp_times.min(), name='responseTime', unit='seconds',
-									  timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(resp_times))
+									  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(resp_times))
 	
 	dicti = {}
 	dicti['mean'] = resp_time_mean

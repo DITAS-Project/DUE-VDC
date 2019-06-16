@@ -1,5 +1,6 @@
 import json
 import requests
+import dateutil.parser
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 from flask import Response
@@ -78,8 +79,6 @@ def json_response_formatter(dictionary):
     js = json.dumps(dictionary)
     return Response(js, status=200, mimetype='application/json')
 
-def parse_timestamp(str_ts):
-    s_date, s_time = str_ts.split("T")
-    [y, mo, d] = [int(ss) for ss in s_date.split("-")]
-    [h, mi, s] = [int(ss) for ss in s_time.split(":")]
-    return datetime(year=y, month=mo, day=d, hour=h, minute=mi, second=s)
+
+def parse_timestamp(datestring):
+    return dateutil.parser.parse(datestring)

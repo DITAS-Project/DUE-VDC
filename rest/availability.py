@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import pytz
 from flask import Blueprint
 from rest import utils as ut
 from datetime import datetime
@@ -21,14 +22,17 @@ def get_service_avail(service, timestamp, time_window, minutes):
     res = ut.es_query(query=query_ids, size=total_hits)
     availabilities = []
     infos = {}
-    oldest_ts = datetime.now()
+    oldest_ts = datetime.now(pytz.utc)
     for hit in res['hits']['hits']:
         source = hit['_source']
         id = source['request.id']
         if id not in infos.keys():
             infos[id] = {'successes': 0, 'attempts': 0}
-        # TODO here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-        # TODO then change the delta as delta = timestamp - oldest_ts
+
+        # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+        ts = ut.parse_timestamp(source['@timestamp'])
+        if ts < oldest_ts:
+            oldest_ts = ts
         
         # TODO: check if it always contains a request.length attribute, it should
         request_length = source['request.length']
@@ -47,12 +51,15 @@ def get_service_avail(service, timestamp, time_window, minutes):
         availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
     availabilities = np.array(availabilities)
 
+    # Delta is computed from now to the oldest hit found
+    delta = (datetime.now(pytz.utc) - oldest_ts).total_seconds()/60
+
     avail_mean = ut.body_formatter(meter='mean', value=availabilities.mean(), name='availability', unit='percentage',
-                                timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
+                                   timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
     avail_max = ut.body_formatter(meter='max', value=availabilities.max(), name='availability', unit='percentage',
-                               timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
+                                  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
     avail_min = ut.body_formatter(meter='min', value=availabilities.min(), name='availability', unit='percentage',
-                               timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
+                                  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
 
     dicti = {}
     dicti['mean'] = avail_mean
