@@ -1,23 +1,25 @@
 import json
 import numpy as np
-from flask import Blueprint, Response
-from utils import *
+from flask import Blueprint
+from rest import utils as ut
 
 throughput_page = Blueprint('throughput', __name__)
 
 QUERY_CONTENT = '*'
 
+
 @throughput_page.route('/')
 def hello():
     return json.dumps({'msg': "I'm throughput file!"})
 
-#return a dictionary
+
+# return a dictionary
 def get_service_throughput(service, timestamp, time_window, minutes):
     print(service)
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
-    res = es_query(query=query_ids)
+    res = ut.es_query(query=query_ids)
     total_hits = res['hits']['total']
-    res = es_query(query=query_ids, size=total_hits)
+    res = ut.es_query(query=query_ids, size=total_hits)
     throughputs = []
     infos = {}
     for hit in res['hits']['hits']:
@@ -35,12 +37,13 @@ def get_service_throughput(service, timestamp, time_window, minutes):
         throughputs.append((infos[id]['response_length'] / infos[id]['request_time']) * 1e9)
     throughputs = np.array(throughputs)
 
-    throughput_mean = body_formatter(meter='mean', value=throughputs.mean(), name='throughput', unit='BytesPerSecond',
-                                timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
-    throughput_max = body_formatter(meter='max', value=throughputs.max(), name='throughput', unit='BytesPerSecond',
-                               timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
-    throughput_min = body_formatter(meter='min', value=throughputs.min(), name='throughput', unit='BytesPerSecond',
-                               timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+    throughput_mean = ut.body_formatter(meter='mean', value=throughputs.mean(), name='throughput', unit='BytesPerSecond',
+                                        timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+    throughput_max = ut.body_formatter(meter='max', value=throughputs.max(), name='throughput', unit='BytesPerSecond',
+                                       timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
+
+    throughput_min = ut.body_formatter(meter='min', value=throughputs.min(), name='throughput', unit='BytesPerSecond',
+                                       timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(throughputs))
 
     dicti = {}
     dicti['mean'] = throughput_mean
@@ -54,11 +57,12 @@ def all_throughput_of_minutes(minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
     timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     # Read list of services, of which to compute the metric
-    services = get_services()
+    services = ut.get_services()
     ret_dict = {}
     for service in services:
         ret_dict[service] = get_service_throughput(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+    return ut.json_response_formatter(ret_dict)
+
 
 @throughput_page.route('/<string:service>/time/<int:minutes>')
 def service_throughput_of_minutes(service, minutes):
@@ -66,4 +70,4 @@ def service_throughput_of_minutes(service, minutes):
     timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     ret_dict = {}
     ret_dict[service] = get_service_throughput(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+    return ut.json_response_formatter(ret_dict)

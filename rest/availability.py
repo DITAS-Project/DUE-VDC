@@ -1,7 +1,8 @@
 import json
 import numpy as np
-from flask import Blueprint, Response
-from utils import *
+from flask import Blueprint
+from rest import utils as ut
+from datetime import datetime
 
 avail_page = Blueprint('availability', __name__)
 
@@ -15,9 +16,9 @@ def hello():
 def get_service_avail(service, timestamp, time_window, minutes):
     print(service)
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
-    res = es_query(query=query_ids)
+    res = ut.es_query(query=query_ids)
     total_hits = res['hits']['total']
-    res = es_query(query=query_ids, size=total_hits)
+    res = ut.es_query(query=query_ids, size=total_hits)
     availabilities = []
     infos = {}
     oldest_ts = datetime.now()
@@ -46,11 +47,11 @@ def get_service_avail(service, timestamp, time_window, minutes):
         availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
     availabilities = np.array(availabilities)
 
-    avail_mean = body_formatter(meter='mean', value=availabilities.mean(), name='availability', unit='percentage',
+    avail_mean = ut.body_formatter(meter='mean', value=availabilities.mean(), name='availability', unit='percentage',
                                 timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
-    avail_max = body_formatter(meter='max', value=availabilities.max(), name='availability', unit='percentage',
+    avail_max = ut.body_formatter(meter='max', value=availabilities.max(), name='availability', unit='percentage',
                                timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
-    avail_min = body_formatter(meter='min', value=availabilities.min(), name='availability', unit='percentage',
+    avail_min = ut.body_formatter(meter='min', value=availabilities.min(), name='availability', unit='percentage',
                                timestamp=timestamp, delta=minutes, delta_unit='minutes', hits=len(availabilities))
 
     dicti = {}
@@ -66,11 +67,11 @@ def all_avail_of_minutes(minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
     timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     # Read list of services, of which to compute the metric
-    services = get_services()
+    services = ut.get_services()
     ret_dict = {}
     for service in services:
         ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+    return ut.json_response_formatter(ret_dict)
 
 
 @avail_page.route('/<string:service>/time/<int:minutes>')
@@ -79,7 +80,7 @@ def service_avail_of_minutes(service, minutes):
     timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     ret_dict = {}
     ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
-    return json_response_formatter(ret_dict)
+    return ut.json_response_formatter(ret_dict)
 
 
 @avail_page.route('/test')
@@ -91,5 +92,5 @@ def test():
         ]
     }
 
-    es_resp = es_rest(body=dicti)
-    return json_response_formatter(es_resp)
+    es_resp = ut.es_rest(body=dicti)
+    return ut.json_response_formatter(es_resp)
