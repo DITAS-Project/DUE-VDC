@@ -13,7 +13,18 @@ ecc copiando la vecchia implementazione
 Aggreghiamo (BluePrint-ID, request.operationID) e calcoliamo tutte le 
 metriche rispetta a delta_tempo (default 1 min).
 
+2^ bis
+
 In parallelo a questa fase, verrà chiamato un modulo stub che ci verrà
 fornito in futuro
 
 Verrà aggiunta una nuova metrica: scalability
+
+---------------------------
+
+Domande per la prossima volta:
+- IMPORTANTE: il timestamp incluso in ES si riferisce al momento in cui
+              i dati sono stati scritti in ES, NON al timestamp della
+              hit. Questo campo è fondamentale per calcolare le metriche,
+              è quello che deve essere incluso della finestra di tempo
+              di ricerca. Manca? O è stato interpretato male?
