@@ -15,7 +15,6 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
     res = utils.es_query(query=query_ids, size=total_hits)
     throughputs = []
 
-    oldest_ts = datetime.now(pytz.utc)
     for hit in res['hits']['hits']:
         blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'])
         source = hit['_source']
@@ -27,11 +26,6 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
             # Fixing the name of the attribute: it is actually a response time
             response_time = source['request.requestTime']
         current_throughput = response_length / response_time * 1e9
-
-        # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-        ts = utils.parse_timestamp(source['@timestamp'])
-        if ts < oldest_ts:
-            oldest_ts = ts
 
         metric_per_hit = {"BluePrint-ID": blueprint_id,
                           "VDC-Instance-ID": vdc_instance_id,
@@ -54,15 +48,30 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
     # TODO: filtrando per timestamp
     services = utils.get_services()
     aggregate_throughputs = []
+
+    now_ts = datetime.now(pytz.utc)
     for service in services:
         throughputs = get_service_throughput_per_hit(service, computation_timestamp, time_window)
         aggregate_throughputs_per_service = {}
+        infos_per_service = {}
         for throughput in throughputs:
             bp_id = throughput['BluePrint-ID']
             if bp_id not in aggregate_throughputs_per_service.keys():
                 aggregate_throughputs_per_service[bp_id] = {'response_length': 0, 'request_time': 0}
+                infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
             aggregate_throughputs_per_service[bp_id]['response_length'] += throughput['response_length']
             aggregate_throughputs_per_service[bp_id]['response_time'] += throughput['response_time']
+
+            # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+            ts = utils.parse_timestamp(throughput['hit_timestamp'])
+            if ts < infos_per_service[bp_id]['oldest_ts']:
+                infos_per_service[bp_id]['oldest_ts'] = ts
+            # Update the number of hit
+            infos_per_service[bp_id]['hits'] += 1
+
+        # Delta is computed from now to the oldest hit found
+        delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
+
         for bp_id in aggregate_throughputs_per_service.keys():
             dict = {
                 'method': service,
@@ -71,11 +80,14 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
                          aggregate_throughputs_per_service[id]['request_time'] * 1e9,
                 'metric': 'throughput',
                 'unit': 'bytesPerSecond',
-                "@timestamp": computation_timestamp
-
+                "@timestamp": computation_timestamp,
+                'delta': delta,
+                'delta_unit': 'minutes',
+                'hits': infos_per_service[bp_id]['hits']
             }
             aggregate_throughputs.append(dict)
     return aggregate_throughputs
+
 
 def all_throughput_of_minutes(minutes):
     timestamp, time_window = utils.get_timestamp_timewindow(minutes)
