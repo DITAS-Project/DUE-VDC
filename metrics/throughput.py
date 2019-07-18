@@ -25,7 +25,7 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
         if 'request.requestTime' in source:
             # Fixing the name of the attribute: it is actually a response time
             response_time = source['request.requestTime']
-        current_throughput = response_length / response_time * 1e9
+        #current_throughput = response_length / response_time * 1e9
 
         metric_per_hit = {"BluePrint-ID": blueprint_id,
                           "VDC-Instance-ID": vdc_instance_id,
@@ -35,7 +35,7 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
                           "unit": "bytesPerSecond",
                           "response_length": response_length,
                           "response_time": response_time,
-                          "hit-timestamp": "",
+                          "hit-timestamp": source['@timestamp'],
                           "@timestamp": computation_timestamp
                           }
 
