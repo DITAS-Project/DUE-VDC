@@ -76,8 +76,8 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
             dict = {
                 'method': service,
                 'BluePrint-ID': bp_id,
-                'value': aggregate_throughputs_per_service[id]['response_length'] /
-                         aggregate_throughputs_per_service[id]['request_time'] * 1e9,
+                'value': aggregate_throughputs_per_service[bp_id]['response_length'] /
+                         aggregate_throughputs_per_service[bp_id]['request_time'] * 1e9,
                 'metric': 'throughput',
                 'unit': 'bytesPerSecond',
                 "@timestamp": computation_timestamp,
