@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 
 TEMP_CONF_FILE = '../conf/conf.json'
+TEMP_SERVICES_FILE = '../conf/services.json'
 TEMP_INDEX = "tubvdc-*"
 
 def format_time_window(t0, t1):
@@ -35,3 +36,13 @@ def es_query(query=None, size=10, es_index=TEMP_INDEX):
         query = '*'
     print(query)
     return es.search(index=es_index, q=query, size=size)
+
+
+def read_services_from_file(filepath):
+    with open(filepath) as services_file:
+        services = json.load(services_file)
+    return services['services']
+
+
+def get_services():
+    return read_services_from_file(TEMP_SERVICES_FILE)

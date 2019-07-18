@@ -39,7 +39,8 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
                           "Request-ID": request_id,
                           "metric": "throughput",
                           "unit": "bytesPerSecond",
-                          "value": current_throughput,
+                          "response_length": response_length,
+                          "response_time": response_time,
                           "hit-timestamp": "",
                           "@timestamp": computation_timestamp
                           }
@@ -51,7 +52,30 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
 def get_throughput_per_bp_and_method(computation_timestamp, time_window):
     # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase
     # TODO: filtrando per timestamp
+    services = utils.get_services()
+    aggregate_throughputs = []
+    for service in services:
+        throughputs = get_service_throughput_per_hit(service, computation_timestamp, time_window)
+        aggregate_throughputs_per_service = {}
+        for throughput in throughputs:
+            bp_id = throughput['BluePrint-ID']
+            if bp_id not in aggregate_throughputs_per_service.keys():
+                aggregate_throughputs_per_service[bp_id] = {'response_length': 0, 'request_time': 0}
+            aggregate_throughputs_per_service[bp_id]['response_length'] += throughput['response_length']
+            aggregate_throughputs_per_service[bp_id]['response_time'] += throughput['response_time']
+        for bp_id in aggregate_throughputs_per_service.keys():
+            dict = {
+                'method': service,
+                'BluePrint-ID': bp_id,
+                'value': aggregate_throughputs_per_service[id]['response_length'] /
+                         aggregate_throughputs_per_service[id]['request_time'] * 1e9,
+                'metric': 'throughput',
+                'unit': 'bytesPerSecond',
+                "@timestamp": computation_timestamp
 
+            }
+            aggregate_throughputs.append(dict)
+    return aggregate_throughputs
 
 def all_throughput_of_minutes(minutes):
     timestamp, time_window = utils.get_timestamp_timewindow(minutes)
