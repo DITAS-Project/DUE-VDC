@@ -30,7 +30,7 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
                           "Request-ID": request_id,
                           "metric": "response time",
                           "unit": "second",
-                          "response_time": response_time,
+                          "value": response_time,
                           "hit-timestamp": source['@timestamp'],
                           "@timestamp": computation_timestamp
                           }
@@ -53,10 +53,9 @@ def get_response_times_per_bp_and_method(computation_timestamp, time_window):
         for response_time in response_times:
             bp_id = response_time['BluePrint-ID']
             if bp_id not in aggregate_response_time_per_service.keys():
-                aggregate_response_time_per_service[bp_id] = {'request_time': 0, 'counter': 0}
+                aggregate_response_time_per_service[bp_id] = []
                 infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
-            aggregate_response_time_per_service[bp_id]['counter'] += 1
-            aggregate_response_time_per_service[bp_id]['response_time'] += response_time['response_time']
+            aggregate_response_time_per_service[bp_id].append(response_time['value'])
 
             # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
             ts = utils.parse_timestamp(response_time['hit_timestamp'])
@@ -72,8 +71,9 @@ def get_response_times_per_bp_and_method(computation_timestamp, time_window):
             dict = {
                 'method': service,
                 'BluePrint-ID': bp_id,
-                'value': aggregate_response_time_per_service[bp_id]['request_time'] * 1e9 /
-                         aggregate_response_time_per_service[bp_id]['counter'],
+                'mean': np.array(aggregate_response_time_per_service[bp_id]).mean(),
+                'min': np.array(aggregate_response_time_per_service[bp_id]).min(),
+                'max': np.array(aggregate_response_time_per_service[bp_id]).max(),
                 'metric': 'response time',
                 'unit': 'second',
                 "@timestamp": computation_timestamp,

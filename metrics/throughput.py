@@ -25,7 +25,7 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
         if 'request.requestTime' in source:
             # Fixing the name of the attribute: it is actually a response time
             response_time = source['request.requestTime']
-        #current_throughput = response_length / response_time * 1e9
+        current_throughput = response_length / response_time * 1e9
 
         metric_per_hit = {"BluePrint-ID": blueprint_id,
                           "VDC-Instance-ID": vdc_instance_id,
@@ -33,8 +33,7 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
                           "Request-ID": request_id,
                           "metric": "throughput",
                           "unit": "bytesPerSecond",
-                          "response_length": response_length,
-                          "response_time": response_time,
+                          "value": current_throughput,
                           "hit-timestamp": source['@timestamp'],
                           "@timestamp": computation_timestamp
                           }
@@ -57,10 +56,9 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
         for throughput in throughputs:
             bp_id = throughput['BluePrint-ID']
             if bp_id not in aggregate_throughputs_per_service.keys():
-                aggregate_throughputs_per_service[bp_id] = {'response_length': 0, 'request_time': 0}
+                aggregate_throughputs_per_service[bp_id] = []
                 infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
-            aggregate_throughputs_per_service[bp_id]['response_length'] += throughput['response_length']
-            aggregate_throughputs_per_service[bp_id]['response_time'] += throughput['response_time']
+            aggregate_throughputs_per_service[bp_id].append(throughput['value'])
 
             # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
             ts = utils.parse_timestamp(throughput['hit_timestamp'])
@@ -76,8 +74,9 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
             dict = {
                 'method': service,
                 'BluePrint-ID': bp_id,
-                'value': aggregate_throughputs_per_service[bp_id]['response_length'] /
-                         aggregate_throughputs_per_service[bp_id]['request_time'] * 1e9,
+                'mean': np.array(aggregate_throughputs_per_service[bp_id]).mean(),
+                'min': np.array(aggregate_throughputs_per_service[bp_id]).min(),
+                'max': np.array(aggregate_throughputs_per_service[bp_id]).max(),
                 'metric': 'throughput',
                 'unit': 'bytesPerSecond',
                 "@timestamp": computation_timestamp,

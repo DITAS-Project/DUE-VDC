@@ -13,39 +13,58 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
     total_hits = res['hits']['total']
     res = utils.es_query(query=query_ids, size=total_hits)
     availabilities = []
-
+    request_response_dict = {}
     for hit in res['hits']['hits']:
         blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'])
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
-        success = 0
-        attempt = 0
+        if request_id not in request_response_dict.keys():
+            request_response_dict[request_id] = {"BluePrint-ID": blueprint_id,
+                                                "VDC-Instance-ID": vdc_instance_id,
+                                                "Operation-ID": operation_id,
+                                                'attempt': 0,
+                                                'success': 0,
+                                                "hit-timestamp": source['@timestamp'],
+                                                 }
 
         # For each request there is a corresponding response, so the request is counted as an attempt
         # and if the response is found, then it is counted as a success. In this way a response not found
         # is automatically accounted as a fail.
         if 'request.length' in source and source['request.length'] > 0:
             # It is a request hit
-            attempt = 1
+            request_response_dict[request_id]['attempt'] += 1
         elif 'response.length' in source and source['response.length'] > 0:
             # Fixing the name of the attribute: it is actually a response time
             if 'response.code' in source and source['response.code'] < 500:
-                success = 1
+                request_response_dict[request_id]['success'] += 1
             elif 'response.code' not in source:
                 print('Response hit without response.code!!!')
 
-        metric_per_hit = {"BluePrint-ID": blueprint_id,
-                          "VDC-Instance-ID": vdc_instance_id,
-                          "Operation-ID": operation_id,
-                          "Request-ID": request_id,
-                          "attempt": attempt,
-                          "success": success,
-                          "hit-timestamp": source['@timestamp'],
-                          "@timestamp": computation_timestamp
-                          }
-
-        availabilities.append(metric_per_hit)
+    for request_id, values in request_response_dict.iteritems():
+        blueprint_id = values['BluePrint-ID']
+        operation_id = values['Operation-ID']
+        vdc_instance_id = values['VDC-Instance-ID']
+        timestamp = values['hit-timestamp']
+        attempt = values['attempt']
+        success = values['success']
+        while attempt > 0:
+            attempt -= 1
+            value = False
+            if success > 0:
+                success -= 1
+                value = True
+            metric_per_hit = {"BluePrint-ID": blueprint_id,
+                              "VDC-Instance-ID": vdc_instance_id,
+                              "Operation-ID": operation_id,
+                              "Request-ID": request_id,
+                              "metric": "availability",
+                              "unit": "Boolean",
+                              "value": value,
+                              "hit-timestamp": timestamp,
+                              "@timestamp": computation_timestamp
+                              }
+            availabilities.append(metric_per_hit)
 
     return availabilities
 
@@ -68,8 +87,9 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window):
 
             # Since attempt is 1 only for the request, and 0 for the response there is no risk
             # to add twice each client request (1 for request hit, and 1 for the response hit)
-            aggregate_availabilities_per_service[bp_id]['attempts'] += availability['attempt']
-            aggregate_availabilities_per_service[bp_id]['successes'] += availability['success']
+            aggregate_availabilities_per_service[bp_id]['attempts'] += 1
+            if availability['value']:
+                aggregate_availabilities_per_service[bp_id]['successes'] += availability['success']
 
         # Delta is computed from now to the oldest hit found
         delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
