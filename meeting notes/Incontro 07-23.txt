@@ -1,0 +1,11 @@
+DUE-VDC
+- Calcolare la singola metrica invece che portarsi dietro le informazio-
+  ni per calcolarla, poi verrà aggregato in qualche modo dall'operatore 
+  SLA
+- Il demone scrive su ES i risultati della prima fase
+- L'API invece no, rifà il calcolo (riutilizzare fase uno), poi aggrega
+  (quindi solo l'API esegue la fase due) e restituisce solo in output al
+  chiamante.
+- Al lancio del DUE-VDC, oltre ad un thread per ogni metrica viene 
+  lanciato un modulo esterno in un altro thread dedicato
+- La metrica per ultime N chiamate non serve più

@@ -1,0 +1,30 @@
+DUE-VDC
+
+1^ fase, calcoliamo per ogni metodo la metrica puntuale per ogni singola
+chiamata e scriviamo su ES con chiave primaria composita:
+1. BluePrint-ID
+2. VDC-Instance-ID
+3. request.ID 
+4. request.operationID
+E ci inseriamo il tipo di metrica, il valore, il timestamp della richiesta,
+ecc copiando la vecchia implementazione
+
+2^ fase
+Aggreghiamo (BluePrint-ID, request.operationID) e calcoliamo tutte le 
+metriche rispetta a delta_tempo (default 1 min).
+
+2^ bis
+
+In parallelo a questa fase, verrà chiamato un modulo stub che ci verrà
+fornito in futuro
+
+Verrà aggiunta una nuova metrica: scalability
+
+---------------------------
+
+Domande per la prossima volta:
+- IMPORTANTE: il timestamp incluso in ES si riferisce al momento in cui
+              i dati sono stati scritti in ES, NON al timestamp della
+              hit. Questo campo è fondamentale per calcolare le metriche,
+              è quello che deve essere incluso della finestra di tempo
+              di ricerca. Manca? O è stato interpretato male?
