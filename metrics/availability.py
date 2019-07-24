@@ -12,17 +12,19 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
     res = utils.es_query(query=query_ids)
     total_hits = res['hits']['total']
     res = utils.es_query(query=query_ids, size=total_hits)
-    availabilities = []
-    request_response_dict = {}
+    attempts_successes_dict = {}
     for hit in res['hits']['hits']:
         blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'])
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
-        if request_id not in request_response_dict.keys():
-            request_response_dict[request_id] = {"BluePrint-ID": blueprint_id,
+        if blueprint_id not in attempts_successes_dict.keys():
+            attempts_successes_dict[blueprint_id] = {}
+        if request_id not in attempts_successes_dict[blueprint_id].keys():
+            attempts_successes_dict[blueprint_id][request_id] = {"BluePrint-ID": blueprint_id,
                                                 "VDC-Instance-ID": vdc_instance_id,
                                                 "Operation-ID": operation_id,
+                                                'Request-ID': request_id,
                                                 'attempt': 0,
                                                 'success': 0,
                                                 "hit-timestamp": source['@timestamp'],
@@ -33,38 +35,41 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
         # is automatically accounted as a fail.
         if 'request.length' in source and source['request.length'] > 0:
             # It is a request hit
-            request_response_dict[request_id]['attempt'] += 1
+            attempts_successes_dict[blueprint_id][request_id]['attempt'] += 1
         elif 'response.length' in source and source['response.length'] > 0:
             # Fixing the name of the attribute: it is actually a response time
             if 'response.code' in source and source['response.code'] < 500:
-                request_response_dict[request_id]['success'] += 1
+                attempts_successes_dict[blueprint_id][request_id]['success'] += 1
             elif 'response.code' not in source:
                 print('Response hit without response.code!!!')
 
-    for request_id, values in request_response_dict.iteritems():
-        blueprint_id = values['BluePrint-ID']
-        operation_id = values['Operation-ID']
-        vdc_instance_id = values['VDC-Instance-ID']
-        timestamp = values['hit-timestamp']
-        attempt = values['attempt']
-        success = values['success']
-        while attempt > 0:
-            attempt -= 1
-            value = False
-            if success > 0:
-                success -= 1
-                value = True
-            metric_per_hit = {"BluePrint-ID": blueprint_id,
-                              "VDC-Instance-ID": vdc_instance_id,
-                              "Operation-ID": operation_id,
-                              "Request-ID": request_id,
-                              "metric": "availability",
-                              "unit": "Boolean",
-                              "value": value,
-                              "hit-timestamp": timestamp,
-                              "@timestamp": computation_timestamp
-                              }
-            availabilities.append(metric_per_hit)
+    availabilities = []
+    for bp_id in attempts_successes_dict.keys():
+        for attempts_successes in attempts_successes_dict[bp_id]:
+            blueprint_id = attempts_successes['BluePrint-ID']
+            operation_id = attempts_successes['Operation-ID']
+            vdc_instance_id = attempts_successes['VDC-Instance-ID']
+            request_id = attempts_successes['Request-ID']
+            attempt = attempts_successes['attempt']
+            success = attempts_successes['success']
+            timestamp = attempts_successes['hit-timestamp']
+            while attempt > 0:
+                attempt -= 1
+                value = False
+                if success > 0:
+                    success -= 1
+                    value = True
+                metric_per_hit = {"BluePrint-ID": blueprint_id,
+                                  "VDC-Instance-ID": vdc_instance_id,
+                                  "Operation-ID": operation_id,
+                                  "Request-ID": request_id,
+                                  "metric": "availability",
+                                  "unit": "Boolean",
+                                  "value": value,
+                                  "hit-timestamp": timestamp,
+                                  "@timestamp": computation_timestamp
+                                  }
+                availabilities.append(metric_per_hit)
 
     return availabilities
 
