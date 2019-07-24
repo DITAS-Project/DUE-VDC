@@ -27,7 +27,7 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
                                                 'Request-ID': request_id,
                                                 'attempt': 0,
                                                 'success': 0,
-                                                "hit-timestamp": source['@timestamp'],
+                                                "hit-timestamp": source['@timestamp']
                                                  }
 
         # For each request there is a corresponding response, so the request is counted as an attempt

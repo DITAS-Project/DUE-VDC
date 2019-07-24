@@ -13,34 +13,53 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
     res = utils.es_query(query=query_ids)
     total_hits = res['hits']['total']
     res = utils.es_query(query=query_ids, size=total_hits)
-    throughputs = []
 
+    throughput_dict = {}
     for hit in res['hits']['hits']:
-        blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'])
+        blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'], '-')
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
+        if blueprint_id not in throughput_dict.keys():
+            throughput_dict[blueprint_id] = {}
+        if request_id not in throughput_dict[blueprint_id].keys():
+            throughput_dict[blueprint_id][request_id] = {"BluePrint-ID": blueprint_id,
+                                                        "VDC-Instance-ID": vdc_instance_id,
+                                                        "Operation-ID": operation_id,
+                                                        'Request-ID': request_id,
+                                                        'response-length': 0,
+                                                        'request-time': 0,
+                                                        "hit-timestamp": source['@timestamp']
+                                                        }
         if 'response.length' in source:
-            response_length = source['response.length']
+            throughput_dict[blueprint_id][request_id]['response-length'] += source['response.length']
         if 'request.requestTime' in source:
-            # Fixing the name of the attribute: it is actually a response time
-            response_time = source['request.requestTime']
-        current_throughput = response_length / response_time * 1e9
+            throughput_dict[blueprint_id][request_id]['request-time'] += source['request.requestTime']
 
-        metric_per_hit = {"BluePrint-ID": blueprint_id,
-                          "VDC-Instance-ID": vdc_instance_id,
-                          "Operation-ID": operation_id,
-                          "Request-ID": request_id,
-                          "metric": "throughput",
-                          "unit": "bytesPerSecond",
-                          "value": current_throughput,
-                          "hit-timestamp": source['@timestamp'],
-                          "@timestamp": computation_timestamp
-                          }
-
-        throughputs.append(metric_per_hit)
+    throughputs = []
+    for bp_id in throughput_dict.keys():
+        for throughput in throughput_dict[bp_id].values():
+            blueprint_id = throughput['BluePrint-ID']
+            operation_id = throughput['Operation-ID']
+            vdc_instance_id = throughput['VDC-Instance-ID']
+            request_id = throughput['Request-ID']
+            length = throughput['response-length']
+            time = throughput['request-time']
+            timestamp = throughput['hit-timestamp']
+            metric_per_hit = {"BluePrint-ID": blueprint_id,
+                            "VDC-Instance-ID": vdc_instance_id,
+                            "Operation-ID": operation_id,
+                            "Request-ID": request_id,
+                            "metric": "throughput",
+                            "unit": "bytesPerSecond",
+                            "value": length / time * 1e9,
+                            "hit-timestamp": timestamp,
+                            "@timestamp": computation_timestamp
+                            }
+            throughputs.append(metric_per_hit)
 
     return throughputs
+
 
 def get_throughput_per_bp_and_method(computation_timestamp, time_window):
     # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase

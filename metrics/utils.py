@@ -2,9 +2,10 @@ import json
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 
-TEMP_CONF_FILE = '../conf/conf.json'
-TEMP_SERVICES_FILE = '../conf/services.json'
+TEMP_CONF_FILE = 'conf/conf.json'
+TEMP_SERVICES_FILE = 'conf/services.json'
 TEMP_INDEX = "tubvdc-*"
+
 
 def format_time_window(t0, t1):
     start_time = t0.strftime('%Y-%m-%dT%H:%M:%S')

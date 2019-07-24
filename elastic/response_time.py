@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 import threading
 import numpy as np
-from elastic.metrics import Metrics
+from elastic.metric import Metrics
 
 
 class ResponseTime(Metrics):

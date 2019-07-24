@@ -5,7 +5,7 @@ import uuid
 from abc import ABC, abstractmethod
 
 
-class Metrics(ABC):
+class Metric(ABC):
     def __init__(self, conf_path, services_path):
         with open(conf_path) as conf_file:
             conf_data = json.load(conf_file)
@@ -37,17 +37,19 @@ class Metrics(ABC):
             query = '*'
         return self.es.search(index=self.index, q=query, size=size)
 
-    def _write(self, operationID, value, name, unit, timestamp, delta, hits):
+    def __format_key(self, bp_id, vdc_inst, request_id, operation_id):
+        return bp_id + '-' + vdc_inst + '-' + request_id + '-' + operation_id
+
+    def write(self, bp_id, vdc_inst, request_id, operation_id, value, name, unit, hit_timestamp, computation_timestamp):
         body = {
             'meter': {
-                'operationID': operationID,
+                'key': self.__format_key(bp_id, vdc_inst, request_id, operation_id),
                 'value': value,
                 'name': name,
                 'unit': unit,
-                'timestamp': timestamp,
-                'delta': delta,
-                'hits': hits
+                'hit-timestamp': hit_timestamp,
+                'computation-timestamp': computation_timestamp
             }
         }
-        index = self.index.split('*')[0] + timestamp.split('T')[0]
+        index = self.index.split('*')[0] + computation_timestamp.split('T')[0]
         self.es.create(index=index, id=str(uuid.uuid4()), body=body)
