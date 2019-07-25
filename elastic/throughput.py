@@ -1,7 +1,5 @@
 import time
-from datetime import datetime
 import threading
-import numpy as np
 from .metric import Metric
 from metrics.throughput import *
 

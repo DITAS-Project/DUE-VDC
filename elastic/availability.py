@@ -1,12 +1,11 @@
 import time
-from datetime import datetime
 import threading
-import numpy as np
-from metrics import Metrics
+from .metric import Metric
+from metrics.availability import *
 
 
-class Availability(Metrics):
-    def __init__(self, conf_path='../conf/conf.json', services_path='../conf/services.json'):
+class Availability(Metric):
+    def __init__(self, conf_path='conf/conf.json', services_path='conf/services.json'):
         super().__init__(conf_path, services_path)
 
     def compute_metric(self, query_content, update_interval):
@@ -20,38 +19,11 @@ class Availability(Metrics):
             timestamp, time_window = self.format_time_window(t0, t1)
             timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'  # TODO: delete this line
             for service in services:
-                print(service)
-                query_ids = query_content + f' AND request.operationID:{service} AND @timestamp:{time_window}'
-                res = self._search(query=query_ids)
-                total_hits = res['hits']['total']
-                res = self._search(query=query_ids, size=total_hits)
-                availabilities = []
-                infos = {}
-                for hit in res['hits']['hits']:
-                    source = hit['_source']
-                    id = source['request.id']
-                    if id not in infos.keys():
-                        infos[id] = {'successes': 0, 'attempts': 0}
-                    # TODO: check if it always contains a request.length attribute, it should
-                    request_length = source['request.length']
-                    if request_length > 0:
-                        # It is a request hit
-                        infos[id]['attempts'] += 1
-                    elif 'response.length' in source and source['response.length'] > 0:
-                        # It is a response hit
-                        # TODO: check if it always contains a response.code attribute, it should
-                        if 'response.code' in source:
-                           if source['response.code'] < 500:
-                               infos[id]['successes'] += 1
-                        else:
-                            print('Response hit without response.code!!!')
-                for id in infos.keys():
-                    availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
-                availabilities = np.array(availabilities)
-                self._write(operationID=service, value=availabilities.mean(), name='availabilityMean', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
-                self._write(operationID=service, value=availabilities.max(), name='availabilityMax', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
-                self._write(operationID=service, value=availabilities.min(), name='availabilityMin', unit='percentage', timestamp=timestamp, delta=update_interval, hits=len(availabilities))
-            print()
+                hits = get_service_availability_per_hit(service, timestamp, time_window)
+                for hit in hits:
+                    self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'],
+                               hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
+                    print()
 
     def launch_sync_update(self):
         queries = self.conf_data['availability']['queries']
@@ -60,7 +32,3 @@ class Availability(Metrics):
             update_interval = query['update_interval']
             threading.Thread(target=self.compute_metric, args=(query_content, update_interval)).start()
             break  # TODO: delete this line
-
-
-es = Availability()
-es.launch_sync_update()
