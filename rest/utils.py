@@ -1,3 +1,4 @@
+'''
 import json
 import requests
 import dateutil.parser
@@ -82,3 +83,5 @@ def json_response_formatter(dictionary):
 
 def parse_timestamp(datestring):
     return dateutil.parser.parse(datestring)
+
+'''
