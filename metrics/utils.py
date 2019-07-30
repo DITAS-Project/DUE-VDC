@@ -1,4 +1,5 @@
 import json
+import pytz
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 
@@ -23,7 +24,7 @@ def extract_bp_id_vdc_id(es_index, separator):
 
 # Compute time window of interest for the query
 def get_timestamp_timewindow(minutes):
-    t0 = datetime.now()
+    t0 = datetime.now(pytz.utc)
     t1 = t0 - timedelta(minutes=minutes)
     return format_time_window(t0, t1)
 

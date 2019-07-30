@@ -74,46 +74,47 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
     return availabilities
 
 
-def get_availability_per_bp_and_method(computation_timestamp, time_window):
+def get_availability_per_bp_and_method(computation_timestamp, time_window, method=''):
     services = utils.get_services()
     aggregate_availabilities = []
 
     now_ts = datetime.now(pytz.utc)
     for service in services:
-        availabilities = get_service_availability_per_hit(service, computation_timestamp, time_window)
-        aggregate_availabilities_per_service = {}
-        infos_per_service = {}
+        if method != '' and method == 'service':
+            availabilities = get_service_availability_per_hit(service, computation_timestamp, time_window)
+            aggregate_availabilities_per_service = {}
+            infos_per_service = {}
 
-        for availability in availabilities:
-            bp_id = availability['BluePrint-ID']
-            if bp_id not in aggregate_availabilities_per_service.keys():
-                aggregate_availabilities_per_service[bp_id] = {'attempts': 0, 'successes': 0}
-                infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
+            for availability in availabilities:
+                bp_id = availability['BluePrint-ID']
+                if bp_id not in aggregate_availabilities_per_service.keys():
+                    aggregate_availabilities_per_service[bp_id] = {'attempts': 0, 'successes': 0}
+                    infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
 
-            # Since attempt is 1 only for the request, and 0 for the response there is no risk
-            # to add twice each client request (1 for request hit, and 1 for the response hit)
-            aggregate_availabilities_per_service[bp_id]['attempts'] += 1
-            if availability['value']:
-                aggregate_availabilities_per_service[bp_id]['successes'] += availability['success']
+                # Since attempt is 1 only for the request, and 0 for the response there is no risk
+                # to add twice each client request (1 for request hit, and 1 for the response hit)
+                aggregate_availabilities_per_service[bp_id]['attempts'] += 1
+                if availability['value']:
+                    aggregate_availabilities_per_service[bp_id]['successes'] += availability['success']
 
-        # Delta is computed from now to the oldest hit found
-        delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
+            # Delta is computed from now to the oldest hit found
+            delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
 
-        for bp_id in aggregate_availabilities_per_service.keys():
-            dict = {
-                'method': service,
-                'BluePrint-ID': bp_id,
-                'value': aggregate_availabilities_per_service[bp_id]['successes'] /
-                         aggregate_availabilities_per_service[bp_id]['attempts'] * 100,
-                'metric': 'availability',
-                'unit': 'percentage',
-                '@timestamp': computation_timestamp,
-                'delta': delta,
-                'delta_unit': 'minutes',
-                'hits': infos_per_service[bp_id]['hits']
+            for bp_id in aggregate_availabilities_per_service.keys():
+                dict = {
+                    'method': service,
+                    'BluePrint-ID': bp_id,
+                    'value': aggregate_availabilities_per_service[bp_id]['successes'] /
+                             aggregate_availabilities_per_service[bp_id]['attempts'] * 100,
+                    'metric': 'availability',
+                    'unit': 'percentage',
+                    '@timestamp': computation_timestamp,
+                    'delta': delta,
+                    'delta_unit': 'minutes',
+                    'hits': infos_per_service[bp_id]['hits']
 
-            }
-            aggregate_availabilities.append(dict)
+                }
+                aggregate_availabilities.append(dict)
 
     return aggregate_availabilities
 

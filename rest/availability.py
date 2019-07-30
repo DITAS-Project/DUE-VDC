@@ -1,9 +1,10 @@
 import json
-import numpy as np
+#import numpy as np
 import pytz
 from flask import Blueprint
 from rest import utils as ut
-from datetime import datetime
+#from datetime import datetime
+from metrics import availability as avail
 
 avail_page = Blueprint('availability', __name__)
 
@@ -13,8 +14,10 @@ QUERY_CONTENT = '*'
 def hello():
     return json.dumps({'msg': "I'm availability file!"})
 
+
+'''
 #return a dictionary
-def get_service_avail(service, timestamp, time_window, minutes):
+def get_service_avail(service, computation_timestamp, time_window, minutes):
     print(service)
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
     res = ut.es_query(query=query_ids)
@@ -67,27 +70,27 @@ def get_service_avail(service, timestamp, time_window, minutes):
     dicti['min'] = avail_min
 
     return dicti
-
+'''
 
 @avail_page.route('/time/<int:minutes>')
 def all_avail_of_minutes(minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    # Read list of services, of which to compute the metric
-    services = ut.get_services()
-    ret_dict = {}
-    for service in services:
-        ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
-    return ut.json_response_formatter(ret_dict)
+    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+
+    avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
+                                                                  time_window=time_window)
+
+    return ut.json_response_formatter(avail_dictionaries)
 
 
 @avail_page.route('/<string:service>/time/<int:minutes>')
-def service_avail_of_minutes(service, minutes):
+def service_avail_of_minutes(method, minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    ret_dict = {}
-    ret_dict[service] = get_service_avail(service, timestamp, time_window, minutes)
-    return ut.json_response_formatter(ret_dict)
+    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+
+    avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
+                                                                  time_window=time_window, service=method)
+    return ut.json_response_formatter(avail_dictionaries)
 
 
 @avail_page.route('/test')
