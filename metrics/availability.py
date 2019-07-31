@@ -82,7 +82,7 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
     print("Found " + str(len(services)) + " services")
     for service in services:
         if method == '' or method == service:
-            print("I'm in")
+            #print("I'm in")
             availabilities = get_service_availability_per_hit(service, computation_timestamp, time_window)
             aggregate_availabilities_per_service = {}
             infos_per_service = {}

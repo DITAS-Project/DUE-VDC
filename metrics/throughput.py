@@ -61,7 +61,7 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
     return throughputs
 
 
-def get_throughput_per_bp_and_method(computation_timestamp, time_window):
+def get_throughput_per_bp_and_method(computation_timestamp, time_window, method=''):
     # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase
     # TODO: filtrando per timestamp
     services = utils.get_services()
@@ -69,41 +69,42 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window):
 
     now_ts = datetime.now(pytz.utc)
     for service in services:
-        throughputs = get_service_throughput_per_hit(service, computation_timestamp, time_window)
-        aggregate_throughputs_per_service = {}
-        infos_per_service = {}
-        for throughput in throughputs:
-            bp_id = throughput['BluePrint-ID']
-            if bp_id not in aggregate_throughputs_per_service.keys():
-                aggregate_throughputs_per_service[bp_id] = []
-                infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
-            aggregate_throughputs_per_service[bp_id].append(throughput['value'])
+        if method == '' or method == service:
+            throughputs = get_service_throughput_per_hit(service, computation_timestamp, time_window)
+            aggregate_throughputs_per_service = {}
+            infos_per_service = {}
+            for throughput in throughputs:
+                bp_id = throughput['BluePrint-ID']
+                if bp_id not in aggregate_throughputs_per_service.keys():
+                    aggregate_throughputs_per_service[bp_id] = []
+                    infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
+                aggregate_throughputs_per_service[bp_id].append(throughput['value'])
 
-            # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-            ts = utils.parse_timestamp(throughput['hit_timestamp'])
-            if ts < infos_per_service[bp_id]['oldest_ts']:
-                infos_per_service[bp_id]['oldest_ts'] = ts
-            # Update the number of hit
-            infos_per_service[bp_id]['hits'] += 1
+                # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+                ts = utils.parse_timestamp(throughput['hit_timestamp'])
+                if ts < infos_per_service[bp_id]['oldest_ts']:
+                    infos_per_service[bp_id]['oldest_ts'] = ts
+                # Update the number of hit
+                infos_per_service[bp_id]['hits'] += 1
 
-        # Delta is computed from now to the oldest hit found
-        delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
+            # Delta is computed from now to the oldest hit found
+            delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
 
-        for bp_id in aggregate_throughputs_per_service.keys():
-            dict = {
-                'method': service,
-                'BluePrint-ID': bp_id,
-                'mean': np.array(aggregate_throughputs_per_service[bp_id]).mean(),
-                'min': np.array(aggregate_throughputs_per_service[bp_id]).min(),
-                'max': np.array(aggregate_throughputs_per_service[bp_id]).max(),
-                'metric': 'throughput',
-                'unit': 'bytesPerSecond',
-                "@timestamp": computation_timestamp,
-                'delta': delta,
-                'delta_unit': 'minutes',
-                'hits': infos_per_service[bp_id]['hits']
-            }
-            aggregate_throughputs.append(dict)
+            for bp_id in aggregate_throughputs_per_service.keys():
+                dict = {
+                    'method': service,
+                    'BluePrint-ID': bp_id,
+                    'mean': np.array(aggregate_throughputs_per_service[bp_id]).mean(),
+                    'min': np.array(aggregate_throughputs_per_service[bp_id]).min(),
+                    'max': np.array(aggregate_throughputs_per_service[bp_id]).max(),
+                    'metric': 'throughput',
+                    'unit': 'bytesPerSecond',
+                    "@timestamp": computation_timestamp,
+                    'delta': delta,
+                    'delta_unit': 'minutes',
+                    'hits': infos_per_service[bp_id]['hits']
+                }
+                aggregate_throughputs.append(dict)
     return aggregate_throughputs
 
 

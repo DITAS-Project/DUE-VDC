@@ -39,7 +39,7 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
 
     return times
 
-def get_response_times_per_bp_and_method(computation_timestamp, time_window):
+def get_response_times_per_bp_and_method(computation_timestamp, time_window, method=''):
     # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase
     # TODO: filtrando per timestamp
     services = utils.get_services()
@@ -47,41 +47,42 @@ def get_response_times_per_bp_and_method(computation_timestamp, time_window):
 
     now_ts = datetime.now(pytz.utc)
     for service in services:
-        response_times = get_service_response_times_per_hit(service, computation_timestamp, time_window)
-        aggregate_response_time_per_service = {}
-        infos_per_service = {}
-        for response_time in response_times:
-            bp_id = response_time['BluePrint-ID']
-            if bp_id not in aggregate_response_time_per_service.keys():
-                aggregate_response_time_per_service[bp_id] = []
-                infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
-            aggregate_response_time_per_service[bp_id].append(response_time['value'])
+        if method == '' or method == service:
+            response_times = get_service_response_times_per_hit(service, computation_timestamp, time_window)
+            aggregate_response_time_per_service = {}
+            infos_per_service = {}
+            for response_time in response_times:
+                bp_id = response_time['BluePrint-ID']
+                if bp_id not in aggregate_response_time_per_service.keys():
+                    aggregate_response_time_per_service[bp_id] = []
+                    infos_per_service[bp_id] = {'oldest_ts': now_ts, 'hits': 0}
+                aggregate_response_time_per_service[bp_id].append(response_time['value'])
 
-            # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-            ts = utils.parse_timestamp(response_time['hit_timestamp'])
-            if ts < infos_per_service[bp_id]['oldest_ts']:
-                infos_per_service[bp_id]['oldest_ts'] = ts
-            # Update the number of hit
-            infos_per_service[bp_id]['hits'] += 1
+                # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+                ts = utils.parse_timestamp(response_time['hit_timestamp'])
+                if ts < infos_per_service[bp_id]['oldest_ts']:
+                    infos_per_service[bp_id]['oldest_ts'] = ts
+                # Update the number of hit
+                infos_per_service[bp_id]['hits'] += 1
 
-        # Delta is computed from now to the oldest hit found
-        delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
+            # Delta is computed from now to the oldest hit found
+            delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
 
-        for bp_id in aggregate_response_time_per_service.keys():
-            dict = {
-                'method': service,
-                'BluePrint-ID': bp_id,
-                'mean': np.array(aggregate_response_time_per_service[bp_id]).mean(),
-                'min': np.array(aggregate_response_time_per_service[bp_id]).min(),
-                'max': np.array(aggregate_response_time_per_service[bp_id]).max(),
-                'metric': 'response time',
-                'unit': 'second',
-                "@timestamp": computation_timestamp,
-                'delta': delta,
-                'delta_unit': 'minutes',
-                'hits': infos_per_service[bp_id]['hits']
-            }
-            aggregate_response_time.append(dict)
+            for bp_id in aggregate_response_time_per_service.keys():
+                dict = {
+                    'method': service,
+                    'BluePrint-ID': bp_id,
+                    'mean': np.array(aggregate_response_time_per_service[bp_id]).mean(),
+                    'min': np.array(aggregate_response_time_per_service[bp_id]).min(),
+                    'max': np.array(aggregate_response_time_per_service[bp_id]).max(),
+                    'metric': 'response time',
+                    'unit': 'second',
+                    "@timestamp": computation_timestamp,
+                    'delta': delta,
+                    'delta_unit': 'minutes',
+                    'hits': infos_per_service[bp_id]['hits']
+                }
+                aggregate_response_time.append(dict)
     return aggregate_response_time
 
 
