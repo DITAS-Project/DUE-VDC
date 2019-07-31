@@ -2,9 +2,9 @@ import json
 #import numpy as np
 import pytz
 from flask import Blueprint
-from rest import utils as ut
 #from datetime import datetime
 from metrics import availability as avail
+from metrics import utils as ut
 
 avail_page = Blueprint('availability', __name__)
 

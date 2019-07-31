@@ -2,6 +2,7 @@ import json
 import pytz
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
+from flask import Response
 
 TEMP_CONF_FILE = 'conf/conf.json'
 TEMP_SERVICES_FILE = 'conf/services.json'
@@ -48,3 +49,8 @@ def read_services_from_file(filepath):
 
 def get_services():
     return read_services_from_file(TEMP_SERVICES_FILE)
+
+def json_response_formatter(dictionary):
+    js = json.dumps(dictionary)
+    return Response(js, status=200, mimetype='application/json')
+
