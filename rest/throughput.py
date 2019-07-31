@@ -1,14 +1,15 @@
-import pytz
-import numpy as np
-from datetime import datetime
+#import pytz
+#import numpy as np
+#from datetime import datetime
 from flask import Blueprint
 from rest import utils as ut
+from metrics import throughput as thrpt
 
 throughput_page = Blueprint('throughput', __name__)
 
 QUERY_CONTENT = '*'
 
-
+'''
 # return a dictionary
 def get_service_throughput(service, timestamp, time_window, minutes):
     print(service)
@@ -56,24 +57,25 @@ def get_service_throughput(service, timestamp, time_window, minutes):
     dicti['max'] = throughput_max
     dicti['min'] = throughput_min
     return dicti
-
+'''
 
 @throughput_page.route('/time/<int:minutes>')
 def all_throughput_of_minutes(minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    # Read list of services, of which to compute the metric
-    services = ut.get_services()
-    ret_dict = {}
-    for service in services:
-        ret_dict[service] = get_service_throughput(service, timestamp, time_window, minutes)
-    return ut.json_response_formatter(ret_dict)
+    # computation_timestamp, time_window = get_timestamp_timewindow(minutes)
+    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+
+    thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
+                                                                time_window=time_window)
+
+    return ut.json_response_formatter(thrpt_dictionaries)
 
 
 @throughput_page.route('/<string:service>/time/<int:minutes>')
-def service_throughput_of_minutes(service, minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-    ret_dict = {}
-    ret_dict[service] = get_service_throughput(service, timestamp, time_window, minutes)
-    return ut.json_response_formatter(ret_dict)
+def service_throughput_of_minutes(method, minutes):
+    # computation_timestamp, time_window = get_timestamp_timewindow(minutes)
+    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+
+    thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
+                                                                time_window=time_window, service=method)
+
+    return ut.json_response_formatter(thrpt_dictionaries)
