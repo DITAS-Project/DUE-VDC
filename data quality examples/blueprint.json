@@ -1,0 +1,1132 @@
+{
+    "INTERNAL_STRUCTURE": {
+        "Overview": {
+            "name": "Prova",
+            "description": "Prova",
+            "tags": []
+        },
+        "Data_Sources": ["Prova", "Prova"],
+        "Methods_Input": {
+            "Methods": [
+                {
+                    "method_id": "",
+                    "data_sources": []
+                }
+            ]
+        },
+        "Flow": {
+            "platform": "Prova",
+            "source": [
+                {
+                    "id": "f28a5522.4c17e8",
+                    "type": "tab",
+                    "label": "CAF",
+                    "disabled": false,
+                    "info": "Entry point for the CAF"
+                },
+                {
+                    "id": "f7a59242.2dce6",
+                    "type": "tab",
+                    "label": "GetStreamingData",
+                    "disabled": false,
+                    "info": "Returns the streaming data for the parameters given."
+                },
+                {
+                    "id": "99717d9f.a9379",
+                    "type": "tab",
+                    "label": "GetSimplifiedDiagnostic",
+                    "disabled": false,
+                    "info": ""
+                },
+                {
+                    "id": "de181d5c.272e8",
+                    "type": "tab",
+                    "label": "GetFullDiagnostic",
+                    "disabled": false,
+                    "info": ""
+                },
+                {
+                    "id": "ec7691.f6b9397",
+                    "type": "subflow",
+                    "name": "Execute-algorithm",
+                    "info": "",
+                    "category": "",
+                    "in": [
+                        {
+                            "x": 100,
+                            "y": 100,
+                            "wires": [
+                                {
+                                    "id": "cd47589b.56a068"
+                                }
+                            ]
+                        }
+                    ],
+                    "out": [],
+                    "env": []
+                },
+                {
+                    "id": "290d8e6c.070432",
+                    "type": "influxdb",
+                    "z": "",
+                    "hostname": "172.16.34.75",
+                    "port": "8086",
+                    "protocol": "http",
+                    "database": "defaultdb",
+                    "name": "Influx en cap. 172.16.34.75",
+                    "usetls": false,
+                    "tls": ""
+                },
+                {
+                    "id": "965b2e2d.2e882",
+                    "type": "grpc-server",
+                    "z": "",
+                    "port": "40001",
+                    "name": "streaming-dal",
+                    "server": "172.16.33.89",
+                    "protoFile": "syntax = \"proto3\";\n\npackage IdekoStreamingDal;\n\n// SavvyStreamingAPI service definition\nservice SavvyStreamingAPI {\n  // Opens a stream request with the parameters specified and returns a stream response\n  rpc StreamMachine (StreamParameters) returns (stream StreamResponse) {}\n}\n\n// The request parameters\nmessage StreamParameters {\n  string machineId = 1;\n  string authorization = 2;\n}\n\n// The response message containing the json line\nmessage StreamResponse {\n  string responseLine = 1;\n}",
+                    "localServer": false
+                },
+                {
+                    "id": "1bfbff3b.1f0d21",
+                    "type": "http response",
+                    "z": "f7a59242.2dce6",
+                    "name": "http",
+                    "statusCode": "",
+                    "streamResponse": "1",
+                    "headers": {
+                        "Transfer-Encoding": "chunked",
+                        "Content-type": "text/json; charset=UTF-8",
+                        "Content-Length": "8"
+                    },
+                    "x": 990,
+                    "y": 220,
+                    "wires": []
+                },
+                {
+                    "id": "78d0e09b.030d4",
+                    "type": "function",
+                    "z": "f7a59242.2dce6",
+                    "name": "stopping?",
+                    "func": "// Sens s STOP signal to the Savy node if the \n// HTTP In node indicates that the connection\n// was closed\n// Esto e sun tema que a\u00f1ad\u00ed o para avisar de conexiones cerradas pero\n// ahora que no uso el nodo de savvy me fastidia. Porque deber\u00eda usarlo\n// para parar la llamada gRPC pero el nodo no parece tener esa feature.\n// As\u00ed que me fastidia, pero lo controlo y punto. Porque si se manda, es\n// como otro input m\u00e1s para el nodo y se re-ejecuta todo.\nif (msg.connectionClosed !== true)\n{\n    return msg;\n}\n// Si la propiedad connectionClosed no es \n// True no se manda nada por lo que el flujo no llega \n// al siguiente mensage",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 260,
+                    "y": 220,
+                    "wires": [
+                        [
+                            "ff0aeba5.69c378"
+                        ]
+                    ]
+                },
+                {
+                    "id": "eac32e84.29f42",
+                    "type": "http in",
+                    "z": "f28a5522.4c17e8",
+                    "name": "CAF",
+                    "url": "/caf/:exposed_method",
+                    "method": "get",
+                    "upload": false,
+                    "swaggerDoc": "",
+                    "x": 130,
+                    "y": 240,
+                    "wires": [
+                        [
+                            "623cc681.4066e8",
+                            "5570d15e.d2cf",
+                            "a3b9eba9.ed67c8"
+                        ]
+                    ]
+                },
+                {
+                    "id": "10a79d06.578cb3",
+                    "type": "link in",
+                    "z": "f7a59242.2dce6",
+                    "name": "GetStreamingData",
+                    "links": [
+                        "760668e9.22bad8"
+                    ],
+                    "x": 155,
+                    "y": 220,
+                    "wires": [
+                        [
+                            "78d0e09b.030d4"
+                        ]
+                    ]
+                },
+                {
+                    "id": "5570d15e.d2cf",
+                    "type": "switch",
+                    "z": "f28a5522.4c17e8",
+                    "name": "method",
+                    "property": "req.params.exposed_method",
+                    "propertyType": "msg",
+                    "rules": [
+                        {
+                            "t": "eq",
+                            "v": "GetSimplifiedDiagnostic",
+                            "vt": "str"
+                        },
+                        {
+                            "t": "eq",
+                            "v": "GetFullDiagnostic",
+                            "vt": "str"
+                        },
+                        {
+                            "t": "eq",
+                            "v": "GetStreamingData",
+                            "vt": "str"
+                        },
+                        {
+                            "t": "else"
+                        }
+                    ],
+                    "checkall": "true",
+                    "repair": false,
+                    "outputs": 4,
+                    "x": 360,
+                    "y": 240,
+                    "wires": [
+                        [
+                            "e1607336.e8697"
+                        ],
+                        [
+                            "573ad826.843228"
+                        ],
+                        [
+                            "760668e9.22bad8"
+                        ],
+                        [
+                            "4b56a8d5.88ba88"
+                        ]
+                    ]
+                },
+                {
+                    "id": "573ad826.843228",
+                    "type": "link out",
+                    "z": "f28a5522.4c17e8",
+                    "name": "GetFullDiagnostic",
+                    "links": [
+                        "3edf5efb.56e232"
+                    ],
+                    "x": 555,
+                    "y": 240,
+                    "wires": []
+                },
+                {
+                    "id": "760668e9.22bad8",
+                    "type": "link out",
+                    "z": "f28a5522.4c17e8",
+                    "name": "GetStreamingData",
+                    "links": [
+                        "10a79d06.578cb3"
+                    ],
+                    "x": 555,
+                    "y": 280,
+                    "wires": []
+                },
+                {
+                    "id": "4b56a8d5.88ba88",
+                    "type": "function",
+                    "z": "f28a5522.4c17e8",
+                    "name": "method not exists",
+                    "func": "msg.payload = \"The exposed doesn't exist: \" + msg.req.params.exposed_method;\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 590,
+                    "y": 360,
+                    "wires": [
+                        [
+                            "31520218.d4672e"
+                        ]
+                    ]
+                },
+                {
+                    "id": "31520218.d4672e",
+                    "type": "http response",
+                    "z": "f28a5522.4c17e8",
+                    "name": "response",
+                    "statusCode": "501",
+                    "headers": {},
+                    "x": 780,
+                    "y": 360,
+                    "wires": []
+                },
+                {
+                    "id": "e1607336.e8697",
+                    "type": "link out",
+                    "z": "f28a5522.4c17e8",
+                    "name": "GetSimplifiedDiagnostic",
+                    "links": [
+                        "a2f5ece5.ecf5e"
+                    ],
+                    "x": 555,
+                    "y": 200,
+                    "wires": []
+                },
+                {
+                    "id": "a2f5ece5.ecf5e",
+                    "type": "link in",
+                    "z": "99717d9f.a9379",
+                    "name": "GetSimplifiedDiagnostic",
+                    "links": [
+                        "e1607336.e8697"
+                    ],
+                    "x": 195,
+                    "y": 100,
+                    "wires": [
+                        [
+                            "e8d5e1a7.c5576"
+                        ]
+                    ]
+                },
+                {
+                    "id": "3edf5efb.56e232",
+                    "type": "link in",
+                    "z": "de181d5c.272e8",
+                    "name": "GetFullDiagnostic",
+                    "links": [
+                        "573ad826.843228"
+                    ],
+                    "x": 195,
+                    "y": 100,
+                    "wires": [
+                        [
+                            "3f38309f.d450c"
+                        ]
+                    ]
+                },
+                {
+                    "id": "623cc681.4066e8",
+                    "type": "debug",
+                    "z": "f28a5522.4c17e8",
+                    "name": "",
+                    "active": false,
+                    "tosidebar": true,
+                    "console": false,
+                    "tostatus": false,
+                    "complete": "true",
+                    "x": 430,
+                    "y": 160,
+                    "wires": []
+                },
+                {
+                    "id": "f17e13e6.b321b",
+                    "type": "comment",
+                    "z": "f28a5522.4c17e8",
+                    "name": "COMPUTATION BLUEPRINT CAF - A single blueprint for all the machines",
+                    "info": "- Si me pasan varias m\u00e1quinas tengo que hacer todo en paralelo porque las funetes de datos (InfluxDB) de cada m\u00e1quina est\u00e1 en un sitio diferente\n- OK Podemos usar la BD local puesto que el DAL es qui\u00e9n media.",
+                    "x": 340,
+                    "y": 60,
+                    "wires": []
+                },
+                {
+                    "id": "af76fe78.b94e",
+                    "type": "comment",
+                    "z": "f7a59242.2dce6",
+                    "name": "COMPUTATION BLUEPRINT CAF - A single blueprint for all the machines",
+                    "info": "- [KO] Si me pasan varias m\u00e1quinas tengo que hacer todo en paralelo porque las funetes de datos (InfluxDB) de cada m\u00e1quina est\u00e1 en un sitio diferente\n- No puedo dejar varias m\u00e1quina porque el nodo de gRPC no pemite que se ejecuten varias request en paralelo. \n- OK Podemos usar la BD local puesto que el DAL es qui\u00e9n media.",
+                    "x": 400,
+                    "y": 60,
+                    "wires": []
+                },
+                {
+                    "id": "7f539c43.376a44",
+                    "type": "comment",
+                    "z": "99717d9f.a9379",
+                    "name": "COMPUTATION BLUEPRINT CAF - A single blueprint for all the machines",
+                    "info": "- Si me pasan varias m\u00e1quinas tengo que hacer todo en paralelo porque las funetes de datos (InfluxDB) de cada m\u00e1quina est\u00e1 en un sitio diferente\n- OK Podemos usar la BD local puesto que el DAL es qui\u00e9n media.",
+                    "x": 340,
+                    "y": 40,
+                    "wires": []
+                },
+                {
+                    "id": "c665882c.ba9ea8",
+                    "type": "comment",
+                    "z": "de181d5c.272e8",
+                    "name": "COMPUTATION BLUEPRINT CAF - A single blueprint for all the machines",
+                    "info": "- Si me pasan varias m\u00e1quinas tengo que hacer todo en paralelo porque las funetes de datos (InfluxDB) de cada m\u00e1quina est\u00e1 en un sitio diferente\n- OK Podemos usar la BD local puesto que el DAL es qui\u00e9n media.",
+                    "x": 340,
+                    "y": 40,
+                    "wires": []
+                },
+                {
+                    "id": "f64e9156.7c014",
+                    "type": "catch",
+                    "z": "f7a59242.2dce6",
+                    "name": "",
+                    "scope": [
+                        "6e32b08.cb8f15"
+                    ],
+                    "uncaught": false,
+                    "x": 290,
+                    "y": 400,
+                    "wires": [
+                        [
+                            "57b508eb.0e9218",
+                            "813fd1bc.7560e"
+                        ]
+                    ]
+                },
+                {
+                    "id": "813fd1bc.7560e",
+                    "type": "function",
+                    "z": "f7a59242.2dce6",
+                    "name": "set-err",
+                    "func": "msg.statusCode = 403\nmsg.streamResponse = false\n\n// To fit Savvy's error message structure...\nresponse = {\n  \"status\": 403,\n  \"code\": 0,\n  \"message\": msg.error.message,\n  \"link\": \"string\",\n  \"developerMessage\": \"string\"\n}\n\nmsg.payload = JSON.stringify(response)\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 490,
+                    "y": 400,
+                    "wires": [
+                        [
+                            "57b508eb.0e9218"
+                        ]
+                    ]
+                },
+                {
+                    "id": "a3b9eba9.ed67c8",
+                    "type": "function",
+                    "z": "f28a5522.4c17e8",
+                    "name": "log",
+                    "func": "node.log('Llamada a ' + msg.req.params.exposed_method);\n\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 250,
+                    "y": 320,
+                    "wires": [
+                        []
+                    ]
+                },
+                {
+                    "id": "57b508eb.0e9218",
+                    "type": "debug",
+                    "z": "f7a59242.2dce6",
+                    "name": "",
+                    "active": true,
+                    "tosidebar": true,
+                    "console": false,
+                    "tostatus": false,
+                    "complete": "true",
+                    "x": 490,
+                    "y": 340,
+                    "wires": []
+                },
+                {
+                    "id": "6e32b08.cb8f15",
+                    "type": "grpc-call",
+                    "z": "f7a59242.2dce6",
+                    "name": "",
+                    "server": "965b2e2d.2e882",
+                    "service": "",
+                    "method": "",
+                    "x": 630,
+                    "y": 220,
+                    "wires": [
+                        [
+                            "4a6a6567.bd47ac",
+                            "deb03ed7.c3252"
+                        ]
+                    ]
+                },
+                {
+                    "id": "ff0aeba5.69c378",
+                    "type": "function",
+                    "z": "f7a59242.2dce6",
+                    "name": "parse-machines",
+                    "func": "// Example call: \n// ip:1888/caf/GetStreamingData?machine=CMX_LQLS26\n\nvar machines = msg.req.query.machine.split(',');\n\nnode.log(\"Received a request for \" + machines.length + \" machines\");\n\n// Send a gRPC request for each machine\nfor (var i=0; i < machines.length; i++)\n{\n    // Can't destry real msg because http request needs it\n    msg.service = \"SavvyStreamingAPI\"\n    msg.method = \"StreamMachine\"\n    msg.payload = {\n      \"machineId\": machines[i],\n      \"authorization\": msg.req.headers[\"authorization\"]\n    }\n    node.log(\"Sending gRPC request for \" + machines[i]);\n    // This mthiod now only respons to a singel machine.\n    // Instead of removing all this logic in the unlikely\n    // event the gRPC nodes support multi-execution in \n    // the future\n    return msg;\n    //node.send(msg);\n}\n",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 440,
+                    "y": 220,
+                    "wires": [
+                        [
+                            "6e32b08.cb8f15"
+                        ]
+                    ]
+                },
+                {
+                    "id": "4a6a6567.bd47ac",
+                    "type": "debug",
+                    "z": "f7a59242.2dce6",
+                    "name": "",
+                    "active": true,
+                    "tosidebar": true,
+                    "console": false,
+                    "tostatus": false,
+                    "complete": "true",
+                    "targetType": "full",
+                    "x": 850,
+                    "y": 360,
+                    "wires": []
+                },
+                {
+                    "id": "deb03ed7.c3252",
+                    "type": "function",
+                    "z": "f7a59242.2dce6",
+                    "name": "payload + bl",
+                    "func": "msg.payload = msg.payload.responseLine + \"\\r\\n\"\nreturn msg",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 810,
+                    "y": 220,
+                    "wires": [
+                        [
+                            "1bfbff3b.1f0d21"
+                        ]
+                    ]
+                },
+                {
+                    "id": "d4f8ec9e.45a5c",
+                    "type": "inject",
+                    "z": "f7a59242.2dce6",
+                    "name": "",
+                    "topic": "",
+                    "payload": "",
+                    "payloadType": "date",
+                    "repeat": "",
+                    "crontab": "",
+                    "once": false,
+                    "onceDelay": 0.1,
+                    "x": 220,
+                    "y": 140,
+                    "wires": [
+                        [
+                            "71f9e64b.1432b8"
+                        ]
+                    ]
+                },
+                {
+                    "id": "71f9e64b.1432b8",
+                    "type": "function",
+                    "z": "f7a59242.2dce6",
+                    "name": "force-call",
+                    "func": "// Example call: \n// ip:1888/caf/GetStreamingData?machine=CMX_LQLS26\n\nnode.log(\"Forcing call for CMX_LQLS26\");\nmsg.service = \"SavvyStreamingAPI\"\nmsg.method = \"StreamMachine\"\nmsg.payload = {\n  \"machineId\": \"CMX_LQLS26\"\n}\nnode.log(\"Sending call request to grpc node\");\n\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 380,
+                    "y": 140,
+                    "wires": [
+                        []
+                    ]
+                },
+                {
+                    "id": "eafb5ad9.34c448",
+                    "type": "grpc-call",
+                    "z": "ec7691.f6b9397",
+                    "name": "",
+                    "service": "",
+                    "method": "",
+                    "x": 410,
+                    "y": 360,
+                    "wires": [
+                        []
+                    ]
+                },
+                {
+                    "id": "943d6909.150b48",
+                    "type": "influxdb in",
+                    "z": "ec7691.f6b9397",
+                    "influxdb": "290d8e6c.070432",
+                    "name": "query",
+                    "query": "",
+                    "rawOutput": true,
+                    "precision": "",
+                    "retentionPolicy": "",
+                    "x": 410,
+                    "y": 320,
+                    "wires": [
+                        [
+                            "37e311c9.7fb21e",
+                            "90266b26.ed5238"
+                        ]
+                    ]
+                },
+                {
+                    "id": "90266b26.ed5238",
+                    "type": "debug",
+                    "z": "ec7691.f6b9397",
+                    "name": "",
+                    "active": true,
+                    "tosidebar": true,
+                    "console": false,
+                    "tostatus": false,
+                    "complete": "true",
+                    "targetType": "full",
+                    "x": 1310,
+                    "y": 80,
+                    "wires": []
+                },
+                {
+                    "id": "9e290132.b783c",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "build-query",
+                    "func": "// Get the global indicator to human name mapping\nvar machineIndicatorsMap = flow.get('indicatorHumanMap')[\"CMX_LQLS26\"];\n\n// Get and set query params\nvar machine = msg.req.query.machine;\nvar timeWindow = msg.req.query.window || 20; // Defaults to 20 minutes\nmsg.machine = machine; // propagate machine downstream\n\n// Build FROM part of the query\nvar from = '';\nfor (var indicatorId in machineIndicatorsMap) {\n    from += \"\\\"defaultdb\\\".\\\"autogen\\\".\\\"\" + indicatorId + \"\\\", \";\n}\n\n// Remove last comma + espace\nfrom = from.slice(0, -2);\n\n// Build the query\nmsg.query = 'SELECT \"value\" \\\n            FROM ' + from + ' \\\n            WHERE time > now() - ' + timeWindow + 'm AND \\\n            \"machine\"=\\'' + machine + '\\'';\n\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 310,
+                    "y": 240,
+                    "wires": [
+                        [
+                            "943d6909.150b48"
+                        ]
+                    ]
+                },
+                {
+                    "id": "1effea22.c20e36",
+                    "type": "file",
+                    "z": "ec7691.f6b9397",
+                    "name": "create-file",
+                    "filename": "",
+                    "appendNewline": true,
+                    "createDir": false,
+                    "overwriteFile": "true",
+                    "x": 720,
+                    "y": 240,
+                    "wires": [
+                        [
+                            "d2582c52.25d88"
+                        ]
+                    ]
+                },
+                {
+                    "id": "cd47589b.56a068",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "ind-human-map",
+                    "func": "var indicatorHumanMap = [];\n\n// One position for each machine\n// This VDC only manages 3 KNOWN machines for SPART MANUFACTURING\nindicatorHumanMap['XXC_MBXSLL'] = []; // Kelly\nindicatorHumanMap['CMS_LJ3Z4P'] = []; // Slater\nindicatorHumanMap['CMX_LQLS26'] = []; // Zack\n\n// Mapping for each machine\n// Kelly mapping\nvar tmpMap = [];\n/*tmpMap['ExecutionState'] = 'I_XXC_MBXSLL_AW8HY7';\ntmpMap['ControllerMode'] = 'I_XXC_MBXSLL_FS38ZU';\ntmpMap['ProgramName'] = 'I_XXC_MBXSLL_UKZVHZ';\ntmpMap['Z1AxisTemperature'] = 'I_XXC_MBXSLL_66SZ4X';\ntmpMap['Z1AxisEngineIntensity'] = 'I_XXC_MBXSLL_V3TRK1';\ntmpMap['Z2AxisTemperature'] = 'I_XXC_MBXSLL_ARKS8V';\ntmpMap['Z2AxisEngineIntensity'] = 'I_XXC_MBXSLL_68SBRS';*/\ntmpMap['I_XXC_MBXSLL_AW8HY7'] = 'ExecutionState';\ntmpMap['I_XXC_MBXSLL_FS38ZU'] = 'ControllerMode';\ntmpMap['I_XXC_MBXSLL_UKZVHZ'] = 'ProgramName';\ntmpMap['I_XXC_MBXSLL_66SZ4X'] = 'Z1AxisTemperature';\ntmpMap['I_XXC_MBXSLL_V3TRK1'] = 'Z1AxisEngineIntensity';\ntmpMap['I_XXC_MBXSLL_ARKS8V'] = 'Z2AxisTemperature';\ntmpMap['I_XXC_MBXSLL_68SBRS'] = 'Z2AxisEngineIntensity';\nindicatorHumanMap['XXC_MBXSLL'] = tmpMap;\n\n// Slater mapping\ntmpMap = [];\n/*tmpMap['ExecutionState'] = 'I_CMS_LJ3Z4P_AW8HY7';\ntmpMap['ControllerMode'] = 'I_CMS_LJ3Z4P_FS38ZU';\ntmpMap['ProgramName'] = 'I_CMS_LJ3Z4P_UKZVHZ';\ntmpMap['Z1AxisTemperature'] = 'I_CMS_LJ3Z4P_66SZ4X';\ntmpMap['Z1AxisEngineIntensity'] = 'I_CMS_LJ3Z4P_V3TRK1';\ntmpMap['Z2AxisTemperature'] = 'I_CMS_LJ3Z4P_ARKS8V';\ntmpMap['Z2AxisEngineIntensity'] = 'I_CMS_LJ3Z4P_68SBRS';*/\ntmpMap['I_CMS_LJ3Z4P_AW8HY7'] = 'ExecutionState';\ntmpMap['I_CMS_LJ3Z4P_FS38ZU'] = 'ControllerMode';\ntmpMap['I_CMS_LJ3Z4P_UKZVHZ'] = 'ProgramName';\ntmpMap['I_CMS_LJ3Z4P_66SZ4X'] = 'Z1AxisTemperature';\ntmpMap['I_CMS_LJ3Z4P_V3TRK1'] = 'Z1AxisEngineIntensity';\ntmpMap['I_CMS_LJ3Z4P_ARKS8V'] = 'Z2AxisTemperature';\ntmpMap['I_CMS_LJ3Z4P_68SBRS'] = 'Z2AxisEngineIntensity';\nindicatorHumanMap['CMS_LJ3Z4P'] = tmpMap;\n\n// Zack mapping\ntmpMap = [];\n/*tmpMap['ExecutionState'] = 'I_CMX_LQLS26_AW8HY7';\ntmpMap['ControllerMode'] = 'I_CMX_LQLS26_FS38ZU';\ntmpMap['ProgramName'] = 'I_CMX_LQLS26_UKZVHZ';\ntmpMap['Z1AxisTemperature'] = 'I_CMX_LQLS26_66SZ4X';\ntmpMap['Z1AxisEngineIntensity'] = 'I_CMX_LQLS26_V3TRK1';\ntmpMap['Z2AxisTemperature'] = 'I_CMX_LQLS26_ARKS8V';\ntmpMap['Z2AxisEngineIntensity'] = 'I_CMX_LQLS26_68SBRS';*/\ntmpMap['I_CMX_LQLS26_AW8HY7'] = 'ExecutionState';\ntmpMap['I_CMX_LQLS26_FS38ZU'] = 'ControllerMode';\ntmpMap['I_CMX_LQLS26_UKZVHZ'] = 'ProgramName';\ntmpMap['I_CMX_LQLS26_66SZ4X'] = 'Z1AxisTemperature';\ntmpMap['I_CMX_LQLS26_V3TRK1'] = 'Z1AxisEngineIntensity';\ntmpMap['I_CMX_LQLS26_ARKS8V'] = 'Z2AxisTemperature';\ntmpMap['I_CMX_LQLS26_68SBRS'] = 'Z2AxisEngineIntensity';\nindicatorHumanMap['CMX_LQLS26'] = tmpMap;\n\n// Set the mappig as a global variable for the flow) \nflow.set(\"indicatorHumanMap\", indicatorHumanMap);\n\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 260,
+                    "y": 100,
+                    "wires": [
+                        [
+                            "9e290132.b783c"
+                        ]
+                    ]
+                },
+                {
+                    "id": "37e311c9.7fb21e",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "format-result",
+                    "func": "// Gets the output from the query command and formats it according to \n// the input needed for the anomaly detection algorithm.\n// Puts the result in the payload property.\n\n// Get the global indicator to human name mapping\nvar machineIndicatorsMap = flow.get('indicatorHumanMap')[\"CMX_LQLS26\"];\n\n// Dive the results to get the series\nvar series = msg.payload.results[0].series;\n\n// Input data for the anom-detection algorithm\nvar input = [];\n\n// Can't assume we have the same number of rows on each serie...\n// Received several times: \"TypeError: Cannot read property '1' of undefined\"\n// So, get the lowest value.\nvar lowestSerieCount = null; //As the series can return different amount of values, stores the min of them\nfor (var serieIndex in series)\n{\n    if (lowestSerieCount === null) {\n        lowestSerieCount = series[serieIndex].values.length;\n    }\n    else {\n        if (lowestSerieCount > series[serieIndex].values.length) {\n            lowestSerieCount = series[serieIndex].values.length;\n        }\n    }\n}\n\n// Loop the number of rows\nfor (var row=0; row<lowestSerieCount; row++)\n{\n    var tmpInputRow = [];\n    tmpInputRow[\"machine\"] = msg.machine;\n    tmpInputRow[\"timestamp\"] = series[0].values[row][0]; // Assume the ts is the same for all series\n\n    // Get the indicaor values for each serie\n    for (var serieIndex in series)\n    {\n        var serie = series[serieIndex];\n        // We have the indicator name on every row of each serie, pick any\n        var serieIndicatorName = machineIndicatorsMap[serie.name];\n        tmpInputRow[serieIndicatorName] = serie.values[row][1];\n    }\n    \n    // Force the program due to a missing feature of IDB that doen't return the program from the query\n    tmpInputRow['ProgramName'] = '_N_INFEED_FEED_SPF';\n    \n    // Convert array to object\n    tmpInputRow = Object.assign({}, tmpInputRow)\n    \n    input.push(tmpInputRow);\n}\n\nmsg.payload = input;\n\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 510,
+                    "y": 240,
+                    "wires": [
+                        [
+                            "7e21e268.b094dc"
+                        ]
+                    ]
+                },
+                {
+                    "id": "d2582c52.25d88",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "prepare-command",
+                    "func": "// TODO el alg fall si no se ejecuta desde su propia carpeta\n// TIP: the program doesn't work if not runf from the same folder\nmsg.payload =  \"cd /opt/ditas/python-teda-framework && python main.py \" + msg.filename;\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 850,
+                    "y": 320,
+                    "wires": [
+                        [
+                            "c6b79b86.fcb5d8",
+                            "90266b26.ed5238"
+                        ]
+                    ]
+                },
+                {
+                    "id": "c6b79b86.fcb5d8",
+                    "type": "exec",
+                    "z": "ec7691.f6b9397",
+                    "command": "",
+                    "addpay": true,
+                    "append": "1",
+                    "useSpawn": "false",
+                    "timer": "60",
+                    "oldrc": false,
+                    "name": "",
+                    "x": 1030,
+                    "y": 320,
+                    "wires": [
+                        [
+                            "e37edab7.ee7f38"
+                        ],
+                        [
+                            "372d5b55.ad2cd4"
+                        ],
+                        [
+                            "6b16a37f.1f7acc",
+                            "782ecb8.6af2434"
+                        ]
+                    ]
+                },
+                {
+                    "id": "7e21e268.b094dc",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "filename",
+                    "func": "msg.filename = \"/opt/ditas/data/input/\" + generateGuid();\nreturn msg;\n\nfunction generateGuid() {\n  var result, i, j;\n  result = '';\n  for(j=0; j<32; j++) {\n    if( j == 8 || j == 12 || j == 16 || j == 20) \n      result = result + '-';\n    i = Math.floor(Math.random()*16).toString(16).toUpperCase();\n    result = result + i;\n  }\n  return result;\n}\n",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 620,
+                    "y": 320,
+                    "wires": [
+                        [
+                            "1effea22.c20e36"
+                        ]
+                    ]
+                },
+                {
+                    "id": "e37edab7.ee7f38",
+                    "type": "file",
+                    "z": "ec7691.f6b9397",
+                    "name": "stdout-to-file",
+                    "filename": "/opt/ditas/data/output/stdout.log",
+                    "appendNewline": true,
+                    "createDir": false,
+                    "overwriteFile": "false",
+                    "x": 1210,
+                    "y": 260,
+                    "wires": [
+                        []
+                    ]
+                },
+                {
+                    "id": "372d5b55.ad2cd4",
+                    "type": "file",
+                    "z": "ec7691.f6b9397",
+                    "name": "stderr-to-file",
+                    "filename": "/opt/ditas/data/output/stderr.log",
+                    "appendNewline": true,
+                    "createDir": false,
+                    "overwriteFile": "true",
+                    "x": 1210,
+                    "y": 320,
+                    "wires": [
+                        []
+                    ]
+                },
+                {
+                    "id": "6b16a37f.1f7acc",
+                    "type": "file",
+                    "z": "ec7691.f6b9397",
+                    "name": "ret-code-to-file",
+                    "filename": "/opt/ditas/data/output/ret-code.log",
+                    "appendNewline": true,
+                    "createDir": false,
+                    "overwriteFile": "false",
+                    "x": 1220,
+                    "y": 380,
+                    "wires": [
+                        [
+                            "90266b26.ed5238"
+                        ]
+                    ]
+                },
+                {
+                    "id": "782ecb8.6af2434",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "check-return-code",
+                    "func": "if (msg.payload.code === 0)\n{\n    // OK! Go through the top output\n    return [msg, null]\n}\nelse return [null, msg]",
+                    "outputs": 2,
+                    "noerr": 0,
+                    "x": 190,
+                    "y": 460,
+                    "wires": [
+                        [
+                            "33bb36bf.2ae33a"
+                        ],
+                        [
+                            "82952758.1c4818"
+                        ]
+                    ]
+                },
+                {
+                    "id": "33bb36bf.2ae33a",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "parse-result",
+                    "func": "var fs = global.get('fs');\n    \n// ODO Aqu\u00b4\u00f1i estaban pegadas odas las rutas\n// Se buclea cada una y se mira si hay anomal\u00eda, se devuelve solo la \u00faltima\n// Fuera del bucle, se rellena la respuesta miando a ver si ha habido o no anomalia\n\nvar pathsToCheck = {};\npathsToCheck[\"Z1AxisTemperature_max\"] = \"/opt/ditas/data/output/Z1Axis/analyze_data/Repetitive___1/Z1AxisTemperature_max/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z1AxisTemperature_mean\"] = \"/opt/ditas/data/output/Z1Axis/analyze_data/Repetitive___1/Z1AxisTemperature_mean/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z1AxisEngineIntensity_max\"] = \"/opt/ditas/data/output/Z1Axis/analyze_data/Repetitive___1/Z1AxisEngineIntensity_max/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z1AxisEngineIntensity_mean\"] = \"/opt/ditas/data/output/Z1Axis/analyze_data/Repetitive___1/Z1AxisEngineIntensity_mean/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z2AxisTemperature_max\"] = \"/opt/ditas/data/output/Z2Axis/analyze_data/Repetitive___1/Z2AxisTemperature_max/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z2AxisTemperature_mean\"] = \"/opt/ditas/data/output/Z2Axis/analyze_data/Repetitive___1/Z2AxisTemperature_mean/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z2AxisEngineIntensity_max\"] = \"/opt/ditas/data/output/Z2Axis/analyze_data/Repetitive___1/Z2AxisEngineIntensity_max/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\npathsToCheck[\"Z2AxisEngineIntensity_mean\"] = \"/opt/ditas/data/output/Z2Axis/analyze_data/Repetitive___1/Z2AxisEngineIntensity_mean/critical_severity2.75density_threshold0.5buffer_size40.0n_min20.0sd_div2.0\"\n\n// Will hold the last detected anomaly info\nvar anomaly = {}\nanomaly.detected = false;\nanomaly.metric = null;\nanomaly.value = null;\n\n// Will hold some parameters for each signal\nvar signals = {};\n\n// Will hold every colum of the output of the anom detection alg.\ntimestamp = null;\nobservation = null;\navg = null;\navg_sq = null;\nstd_dev = null;\nn_of_observations = null;\nanomalous = null;\nchange = null;\nvariation = null;\n\n// Check every output file of the algorithm\nfor (var k in pathsToCheck) \n{\n    // TODO randomly getting split of undefined\n    // Read the cucum_sum.csv file and get the last line\n    var contents = fs.readFileSync(pathsToCheck[k] + \"/cusum_aux.csv\", 'utf8');\n//node.error('antes split');\n    var lines = contents.split(\"\\n\")\n    var lastLine = lines[lines.length - 2]; // Last line always empty, thus, -2\n//node.error(lastLine);\n    // Get all variables from the line\n    [timestamp,observation,avg,avg_sq,std_dev,n_of_observations,anomalous,change,variation] = lastLine.split(',');\n//node.error(\"fin splits\");\n    // Check the _anomaly_ column\n    if (anomalous != \"0\")\n    {\n        anomaly.detected = true;\n        anomaly.raw = \"The average of the period for the metric is over expected value\"\n        anomaly.metric = k\n        anomaly.value = parseFloat(avg)\n    }\n    \n    // Add to signals\n    var tmpSignal = {}\n    tmpSignal.avg = parseFloat(avg);\n    tmpSignal.std_dev = parseFloat(std_dev);\n    //tmpSignal.n_of_observations = parseInt(n_of_observations);\n    tmpSignal.observation = parseFloat(observation);\n    signals[k] = tmpSignal;\n}\n\n// Create a basic response with signals\nvar response = {\n    status: \"OK\",\n    cause: {},\n    timestamp: + new Date(),\n    signals: signals\n}\n\n// If anomaly, update some fields\nif (anomaly.detected)\n{\n    response.status = \"ALERT\"\n    response.cause.raw = anomaly.raw\n    response.cause.metric = anomaly.metric\n    response.cause.value = anomaly.value\n}\n\n// If GSD, remove the signals, as that metod doesn't have to provide that info\nif (msg.req.params.exposed_method == \"_GetSimplifiedDiagnostic\") {\n    response.signals = null;\n}\n\nmsg.payload = response;\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 430,
+                    "y": 440,
+                    "wires": [
+                        [
+                            "a42c5520.86fe18"
+                        ]
+                    ]
+                },
+                {
+                    "id": "a42c5520.86fe18",
+                    "type": "http response",
+                    "z": "ec7691.f6b9397",
+                    "name": "",
+                    "statusCode": "",
+                    "streamResponse": "0",
+                    "headers": {},
+                    "x": 630,
+                    "y": 460,
+                    "wires": []
+                },
+                {
+                    "id": "640aa7e7.d71488",
+                    "type": "http response",
+                    "z": "ec7691.f6b9397",
+                    "name": "",
+                    "statusCode": "",
+                    "streamResponse": "0",
+                    "headers": {},
+                    "x": 590,
+                    "y": 580,
+                    "wires": []
+                },
+                {
+                    "id": "22ebefc6.780e2",
+                    "type": "catch",
+                    "z": "ec7691.f6b9397",
+                    "name": "",
+                    "scope": [],
+                    "uncaught": false,
+                    "x": 250,
+                    "y": 580,
+                    "wires": [
+                        [
+                            "bb1b29b.9601cd8",
+                            "90266b26.ed5238"
+                        ]
+                    ]
+                },
+                {
+                    "id": "bb1b29b.9601cd8",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "set-err",
+                    "func": "msg.statusCode = 500;\nmsg.payload = \"Catched error: \" + msg.error.message;\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 420,
+                    "y": 580,
+                    "wires": [
+                        [
+                            "640aa7e7.d71488"
+                        ]
+                    ]
+                },
+                {
+                    "id": "82952758.1c4818",
+                    "type": "function",
+                    "z": "ec7691.f6b9397",
+                    "name": "set-err",
+                    "func": "msg.statusCode = 500;\nmsg.payload = \"The anomaly detection algorithm failed with status code \" + msg.payload.code;\nreturn msg;",
+                    "outputs": 1,
+                    "noerr": 0,
+                    "x": 410,
+                    "y": 480,
+                    "wires": [
+                        [
+                            "a42c5520.86fe18"
+                        ]
+                    ]
+                },
+                {
+                    "id": "e8d5e1a7.c5576",
+                    "type": "subflow:ec7691.f6b9397",
+                    "z": "99717d9f.a9379",
+                    "name": "execute-anomaly-detection-algorithm",
+                    "env": [],
+                    "x": 410,
+                    "y": 100,
+                    "wires": []
+                },
+                {
+                    "id": "3f38309f.d450c",
+                    "type": "subflow:ec7691.f6b9397",
+                    "z": "de181d5c.272e8",
+                    "name": "execute-anomaly-detection-algorithm",
+                    "env": [],
+                    "x": 410,
+                    "y": 100,
+                    "wires": []
+                }
+            ]
+        },
+        "DAL_Images": {},
+        "VDC_Images": {},
+        "Identity_Access_Management": {
+            "jwks_uri": "",
+            "iam_endpoint": ""
+        },
+        "Testing_Output_Data": [
+            {
+                "method_id": "AMethod",
+                "zip_data": "TO-DO URL to a zip file with data samples",
+                "attributes": ["foo", "bar"]
+            }
+        ]
+    },
+    "DATA_MANAGEMENT": [
+        {
+            "method_id": "",
+            "attributes": {}
+        }
+    ],
+    "ABSTRACT_PROPERTIES": {},
+    "COOKBOOK_APPENDIX": {},
+    "EXPOSED_API": {
+        "openapi": "3.0.0",
+        "info": {
+            "title": "Computation blueprints for SPART MANUFACTURING plant (IDEKO use case)",
+            "description": "Computations blueprints able to get data from the 3 ESTARTA 315 FV machines working on the SPART MANUFATURING plant. Expose 3 methods.",
+            "version": "0.0.1"
+        },
+        "paths": {
+            "/GetStreamingData": {
+                "get": {
+                    "summary": "Returns the streaming data for the parameters given. Machine must be a single machine id.",
+                    "operationId": "GetStreamingData",
+                    "parameters": [
+                        {
+                            "in": "query",
+                            "name": "machine",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/GetStreamingDataResponse"
+                                    }
+                                },
+                                "application/octet-stream": {
+                                    "schema": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        },
+                        "default": {
+                            "description": "Unexpected error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "x-data-sources": [
+                        "Streaming API"
+                    ]
+                }
+            },
+            "/GetSimplifiedDiagnostic": {
+                "get": {
+                    "summary": "Returns a simplified view of the state of the machines in the plant. A list of comma separated machine ids can be passed.",
+                    "operationId": "GetSimplifiedDiagnostic",
+                    "parameters": [
+                        {
+                            "in": "query",
+                            "name": "machines",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/GetSimplifiedDiagnostic"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "x-data-sources": [
+                        "InfluxDB"
+                    ]
+                }
+            },
+            "/GetFullDiagnostic": {
+                "get": {
+                    "summary": "Returns a complete view of the states of the machines in the plant. A list of comma separated machine ids can be passed.",
+                    "operationId": "GetFullDiagnostic",
+                    "parameters": [
+                        {
+                            "in": "query",
+                            "name": "machines",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/GetFullDiagnostic"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "x-data-sources": [
+                        "InfluxDB"
+                    ]
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ErrorResponse": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "integer"
+                        },
+                        "code": {
+                            "type": "integer"
+                        },
+                        "message": {
+                            "type": "string"
+                        },
+                        "link": {
+                            "type": "string"
+                        },
+                        "developerMessage": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "GetStreamingDataResponse": {
+                    "type": "object",
+                    "properties": {
+                        "machine": {
+                            "type": "string"
+                        },
+                        "group": {
+                            "type": "string"
+                        },
+                        "data": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    },
+                                    "timestamp": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "GetSimplifiedDiagnostic": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string",
+                            "enum": [
+                                "OK",
+                                "ALERT",
+                                "WARNING"
+                            ]
+                        },
+                        "timestamp": {
+                            "type": "number",
+                            "example": 1550584972266
+                        },
+                        "cause": {
+                            "type": "object",
+                            "properties": {
+                                "raw": {
+                                    "type": "string"
+                                },
+                                "metric": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "number"
+                                },
+                                "unit": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "GetFullDiagnostic": {
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string",
+                            "enum": [
+                                "OK",
+                                "ALERT",
+                                "WARNING"
+                            ]
+                        },
+                        "timestamp": {
+                            "type": "number",
+                            "example": 1550584972266
+                        },
+                        "cause": {
+                            "type": "object",
+                            "properties": {
+                                "raw": {
+                                    "type": "string"
+                                },
+                                "metric": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "number"
+                                },
+                                "unit": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "signals": {
+                            "type": "object",
+                            "properties": {
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
