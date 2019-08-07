@@ -59,26 +59,25 @@ def get_response_times_per_bp_and_method(computation_timestamp, time_window, met
                 aggregate_response_time_per_service[bp_id].append(response_time['value'])
 
                 # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-                ts = utils.parse_timestamp(response_time['hit_timestamp'])
+                ts = utils.parse_timestamp(response_time['hit-timestamp'])
                 if ts < infos_per_service[bp_id]['oldest_ts']:
                     infos_per_service[bp_id]['oldest_ts'] = ts
                 # Update the number of hit
                 infos_per_service[bp_id]['hits'] += 1
 
-            # Delta is computed from now to the oldest hit found
-            delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
-
             for bp_id in aggregate_response_time_per_service.keys():
+                # Delta is computed from now to the oldest hit found
+                delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
                 dict = {
                     'method': service,
                     'BluePrint-ID': bp_id,
-                    'mean': np.array(aggregate_response_time_per_service[bp_id]).mean(),
-                    'min': np.array(aggregate_response_time_per_service[bp_id]).min(),
-                    'max': np.array(aggregate_response_time_per_service[bp_id]).max(),
+                    'mean': float(np.array(aggregate_response_time_per_service[bp_id]).mean()),
+                    'min': float(np.array(aggregate_response_time_per_service[bp_id]).min()),
+                    'max': float(np.array(aggregate_response_time_per_service[bp_id]).max()),
                     'metric': 'response time',
                     'unit': 'second',
                     "@timestamp": computation_timestamp,
-                    'delta': delta,
+                    'delta': float(delta),
                     'delta_unit': 'minutes',
                     'hits': infos_per_service[bp_id]['hits']
                 }

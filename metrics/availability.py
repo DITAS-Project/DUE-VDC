@@ -82,7 +82,6 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
     print("Found " + str(len(services)) + " services")
     for service in services:
         if method == '' or method == service:
-            #print("I'm in")
             availabilities = get_service_availability_per_hit(service, computation_timestamp, time_window)
             aggregate_availabilities_per_service = {}
             infos_per_service = {}
@@ -102,10 +101,16 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
                 if availability['value']:
                     aggregate_availabilities_per_service[bp_id]['successes'] += 1
 
-            # Delta is computed from now to the oldest hit found
-            delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
+                # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
+                ts = utils.parse_timestamp(availability['hit-timestamp'])
+                if ts < infos_per_service[bp_id]['oldest_ts']:
+                    infos_per_service[bp_id]['oldest_ts'] = ts
+                # Update the number of hit
+                infos_per_service[bp_id]['hits'] += 1
 
             for bp_id in aggregate_availabilities_per_service.keys():
+                # Delta is computed from now to the oldest hit found
+                delta = (now_ts - infos_per_service[bp_id]['oldest_ts']).total_seconds() / 60
                 dict = {
                     'method': service,
                     'BluePrint-ID': bp_id,

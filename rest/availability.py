@@ -1,8 +1,5 @@
 import json
-#import numpy as np
-import pytz
 from flask import Blueprint
-#from datetime import datetime
 from metrics import availability as avail
 from metrics import utils as ut
 
@@ -12,7 +9,7 @@ QUERY_CONTENT = '*'
 
 @avail_page.route('/')
 def hello():
-    return json.dumps({'msg': "I'm availability file!"})
+    return json.dumps({'msg': "I'm the availability file!"})
 
 
 '''
@@ -74,7 +71,7 @@ def get_service_avail(service, computation_timestamp, time_window, minutes):
 
 @avail_page.route('/time/<int:minutes>')
 def all_avail_of_minutes(minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
+    # computation_timestamp, time_window = get_timestamp_timewindow(minutes)
     computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
 
     avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
@@ -83,13 +80,13 @@ def all_avail_of_minutes(minutes):
     return ut.json_response_formatter(avail_dictionaries)
 
 
-@avail_page.route('/<string:service>/time/<int:minutes>')
+@avail_page.route('/<string:method>/time/<int:minutes>')
 def service_avail_of_minutes(method, minutes):
     # timestamp, time_window = get_timestamp_timewindow(minutes)
     computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
 
     avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
-                                                                  time_window=time_window, service=method)
+                                                                  time_window=time_window, method=method)
     return ut.json_response_formatter(avail_dictionaries)
 
 
