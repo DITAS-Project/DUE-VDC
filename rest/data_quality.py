@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, request
-import data_quality_metrics as dq
+import rest.data_quality_metrics as dq
 
 BP_INTERNAL_STRUCTURE = "INTERNAL_STRUCTURE"
 IN_TESTING_OUTPUT_DATA = 'Testing_Output_Data'
