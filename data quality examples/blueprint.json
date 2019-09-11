@@ -867,7 +867,7 @@
             {
                 "method_id": "AMethod",
                 "zip_data": "TO-DO URL to a zip file with data samples",
-                "attributes": ["foo", "bar"]
+                "attributes": ["accuracy", "precision"]
             }
         ]
     },
