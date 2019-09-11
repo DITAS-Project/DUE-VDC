@@ -8,7 +8,6 @@ from rest.data_quality_metrics.timeliness import Timeliness
 from rest.data_quality_metrics.precision import Precision
 from copy import deepcopy
 
-
 BP_INTERNAL_STRUCTURE = "INTERNAL_STRUCTURE"
 IN_TESTING_OUTPUT_DATA = 'Testing_Output_Data'
 IN_TOD_METHOD_ID = 'method_id'
