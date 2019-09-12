@@ -1,0 +1,5 @@
+python-dateutil==2.8.0
+Flask==1.1.1
+elasticsearch==7.0.0
+pytz==2018.9
+numpy==1.16.2
