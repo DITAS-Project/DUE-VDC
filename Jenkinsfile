@@ -41,8 +41,8 @@ pipeline {
                 echo 'Login to Docker Hub as ditasgeneric...'
                 sh "docker login -u ditasgeneric -p ${password}"
                 echo "Done"
-                echo "Pushing the image ditas/due-vdc:staging:staging"
-                sh "docker push ditas/due-vdc:staging:staging"
+                echo "Pushing the image ditas/due-vdc:staging"
+                sh "docker push ditas/due-vdc:staging"
                 echo "Done "
             }
         }
