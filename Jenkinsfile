@@ -11,7 +11,7 @@ pipeline {
             }
             steps {
                 // cr src > if the code is in src folder
-                sh 'pip3 install -r requirements.txt'
+                sh 'pip3 install --user -r requirements.txt'
 
                 // Run the tests?
                 // TO-DO
