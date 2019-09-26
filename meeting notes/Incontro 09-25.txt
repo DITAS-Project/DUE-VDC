@@ -1,0 +1,3 @@
+- su data quality, in attesa di indicazioni su come verranno forniti i
+  dati
+- Mettere i nomi al codice
