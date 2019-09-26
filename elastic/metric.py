@@ -10,7 +10,7 @@ class Metric(ABC):
         with open(conf_path) as conf_file:
             conf_data = json.load(conf_file)
         self.es = Elasticsearch(hosts=conf_data['connections'])
-        self.index = conf_data['index']
+        self.index = conf_data['index_qos']
         self.conf_data = conf_data
         self.services_path = services_path
 

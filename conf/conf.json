@@ -5,7 +5,8 @@
 			"port": 9200
 		}
 	],
-	"index": "tubvdc-*",
+	"index_qos": "tubvdc-*",
+	"index_data_quality": "tubvdc-*",
 	"availability": {
 		"queries": [
 			{
