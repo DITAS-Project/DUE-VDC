@@ -16,7 +16,7 @@ class ResponseTime(Metric):
             t1 = datetime.now()
             services = self.read_services()
             timestamp, time_window = self.format_time_window(t0, t1)
-            timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'  # TODO: delete this line
+            #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
             for service in services:
                 hits = get_service_response_times_per_hit(service, timestamp, time_window)
                 for hit in hits:
@@ -30,4 +30,3 @@ class ResponseTime(Metric):
             query_content = query['query_content']
             update_interval = query['update_interval']
             threading.Thread(target=self.compute_metric, args=(query_content, update_interval)).start()
-            break  # TODO: delete this line

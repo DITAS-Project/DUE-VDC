@@ -1,6 +1,5 @@
 from elasticsearch import Elasticsearch
 import json
-import random
 import uuid
 from abc import ABC, abstractmethod
 

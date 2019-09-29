@@ -5,6 +5,10 @@ from rest.response_time import resp_time_page
 from rest.throughput import throughput_page
 from rest.data_quality import data_quality_page
 
+__author__ = "Cataldo Calò, Mirco Manzoni"
+__credits__ = ["Cataldo Calò", "Mirco Manzoni"]
+__status__ = "Development"
+
 API_PREFIX = '/rest'
 
 app = Flask(__name__)

@@ -7,72 +7,17 @@ avail_page = Blueprint('availability', __name__)
 
 QUERY_CONTENT = '*'
 
+
 @avail_page.route('/')
 def hello():
     return json.dumps({'msg': "I'm the availability file!"})
 
 
-'''
-#return a dictionary
-def get_service_avail(service, computation_timestamp, time_window, minutes):
-    print(service)
-    query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
-    res = ut.es_query(query=query_ids)
-    total_hits = res['hits']['total']
-    res = ut.es_query(query=query_ids, size=total_hits)
-    availabilities = []
-    infos = {}
-    oldest_ts = datetime.now(pytz.utc)
-    for hit in res['hits']['hits']:
-        source = hit['_source']
-        id = source['request.id']
-        if id not in infos.keys():
-            infos[id] = {'successes': 0, 'attempts': 0}
-
-        # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
-        ts = ut.parse_timestamp(source['@timestamp'])
-        if ts < oldest_ts:
-            oldest_ts = ts
-        
-        # TODO: check if it always contains a request.length attribute, it should
-        request_length = source['request.length']
-        if request_length > 0:
-            # It is a request hit
-            infos[id]['attempts'] += 1
-        elif 'response.length' in source and source['response.length'] > 0:
-            # It is a response hit
-            # TODO: check if it always contains a response.code attribute, it should
-            if 'response.code' in source:
-                if source['response.code'] < 500:
-                    infos[id]['successes'] += 1
-            else:
-                print('Response hit without response.code!!!')
-    for id in infos.keys():
-        availabilities.append((infos[id]['successes'] / infos[id]['attempts']) * 100)
-    availabilities = np.array(availabilities)
-
-    # Delta is computed from now to the oldest hit found
-    delta = (datetime.now(pytz.utc) - oldest_ts).total_seconds()/60
-
-    avail_mean = ut.body_formatter(meter='mean', value=availabilities.mean(), name='availability', unit='percentage',
-                                   timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
-    avail_max = ut.body_formatter(meter='max', value=availabilities.max(), name='availability', unit='percentage',
-                                  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
-    avail_min = ut.body_formatter(meter='min', value=availabilities.min(), name='availability', unit='percentage',
-                                  timestamp=timestamp, delta=delta, delta_unit='minutes', hits=len(availabilities))
-
-    dicti = {}
-    dicti['mean'] = avail_mean
-    dicti['max'] = avail_max
-    dicti['min'] = avail_min
-
-    return dicti
-'''
-
 @avail_page.route('/time/<int:minutes>')
 def all_avail_of_minutes(minutes):
-    # computation_timestamp, time_window = get_timestamp_timewindow(minutes)
-    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+    # Time window with dummy data
+    #computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+    computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
     avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window)
@@ -82,8 +27,10 @@ def all_avail_of_minutes(minutes):
 
 @avail_page.route('/<string:method>/time/<int:minutes>')
 def service_avail_of_minutes(method, minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+    # Time window with dummy data
+    #computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+
+    computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
     avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window, method=method)

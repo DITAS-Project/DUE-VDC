@@ -10,9 +10,6 @@
 	"availability": {
 		"queries": [
 			{
-				"query_content": "*", "update_interval": 0.5
-			},
-			{
 				"query_content": "*", "update_interval": 1
 			}
 		]
@@ -20,18 +17,12 @@
 	"throughput": {
 		"queries": [
 			{
-				"query_content": "*", "update_interval": 0.5
-			},
-			{
 				"query_content": "*", "update_interval": 1
 			}
 		]
 	},
 	"response_time": {
 		"queries": [
-			{
-				"query_content": "*", "update_interval": 0.5
-			},
 			{
 				"query_content": "*", "update_interval": 1
 			}
