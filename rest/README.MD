@@ -14,11 +14,10 @@ To run the REST API is enough to launch the script `run_api.sh`
 
 The API structure is: <br>
 
-{api_url}/{service}/{metrics}/{reference}/<reference_value>
+{api_url}/{metrics}/{service}/{reference}/<reference_value>
 
-
-- {service}: operation_id
 - {metrics}: availability, throughput, response_time
+- {service}: operation_id
 - {reference}: sample, time
 - <reference_value>: sample: #samples, time: minutes
 
