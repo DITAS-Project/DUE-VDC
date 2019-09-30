@@ -1,9 +1,9 @@
 import json
-import pytz
-from datetime import datetime, timedelta
+import datetime
+import dateutil.parser
 from elasticsearch import Elasticsearch
 from flask import Response
-import dateutil.parser
+
 
 TEMP_CONF_FILE = 'conf/conf.json'
 TEMP_SERVICES_FILE = 'conf/services.json'
@@ -11,8 +11,8 @@ TEMP_INDEX = "tubvdc-*"
 
 
 def format_time_window(t0, t1):
-    start_time = t0.strftime('%Y-%m-%dT%H:%M:%S')
-    end_time = t1.strftime('%Y-%m-%dT%H:%M:%S')
+    start_time = t0.isoformat()
+    end_time = t1.isoformat()
     return end_time, f'[{start_time} TO {end_time}]'
 
 
@@ -26,8 +26,9 @@ def extract_bp_id_vdc_id(es_index, separator):
 
 # Compute time window of interest for the query
 def get_timestamp_timewindow(minutes):
-    t0 = datetime.now(pytz.utc)
-    t1 = t0 - timedelta(minutes=minutes)
+    local_timezone = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+    t1 = datetime.datetime.now(local_timezone)
+    t0 = t1 - datetime.timedelta(minutes=minutes)
     return format_time_window(t0, t1)
 
 
