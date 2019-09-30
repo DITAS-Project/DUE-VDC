@@ -19,8 +19,8 @@ class Metric(ABC):
         return services['services']
 
     def format_time_window(self, t0, t1):
-        start_time = t0.strftime('%Y-%m-%dT%H:%M:%S')
-        end_time = t1.strftime('%Y-%m-%dT%H:%M:%S')
+        start_time = t0.isoformat()
+        end_time = t1.isoformat()
         return end_time, f'@timestamp:[{start_time} TO {end_time}]'
 
     @abstractmethod
