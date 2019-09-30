@@ -9,7 +9,7 @@ can be provided in the `conf/conf.json` file in the main root directory in the o
 
 ### Launch the REST API
 
-To run the REST API is enough to launch the script `run_api.sh`
+To run the REST API is enough to launch the script `run_api.sh` after installing the requirements using `pip3` or to launch the docker container.
 
 ### REST API docs
 
@@ -63,4 +63,4 @@ have to be provided. This information are gathered from `conf/conf.json`.
 
 ##### TODO 
 
-(Here goes the list of GET/POST methods not yet implemented)
+Refer to [TODO file](https://github.com/DITAS-Project/DUE-VDC/blob/master/TODO.md)
