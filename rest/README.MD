@@ -12,6 +12,8 @@ To run the REST API is enough to launch the script `run_api.sh`
 
 ### REST API docs
 
+The swagger documentation is at `https://{hostname}/api/doc/`
+
 The API structure is: <br>
 
 {api_url}/{metrics}/{service}/{reference}/<reference_value>
