@@ -31,6 +31,8 @@ paths:
         type: integer
         x-example: 30
       responses:
+        404:
+          description: Not Found
         200:
           description: search results matching criteria
           schema:
@@ -39,8 +41,6 @@ paths:
               $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-        404:
-          description: Not Found
   /availability/{method_id}/time/{delta_time}:
     get:
       tags:
@@ -61,14 +61,14 @@ paths:
         type: integer
         x-example: 30
       responses:
+        404:
+          description: Not Found
         200:
           description: search results matching criteria
           schema:
             $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-        404:
-          description: Not Found
 definitions:
   MetricEntry:
     type: object
