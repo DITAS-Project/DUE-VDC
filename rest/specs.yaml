@@ -39,6 +39,8 @@ paths:
               $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
+        404:
+          description: Not Found
   /availability/{method_id}/time/{delta_time}:
     get:
       tags:
@@ -65,8 +67,8 @@ paths:
             $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-
-
+        404:
+          description: Not Found
 definitions:
   MetricEntry:
     type: object
