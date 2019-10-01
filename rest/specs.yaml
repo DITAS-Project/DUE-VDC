@@ -29,6 +29,7 @@ paths:
         name: delta_time
         required: true
         type: integer
+        x-example: 30
       responses:
         200:
           description: search results matching criteria
@@ -51,10 +52,12 @@ paths:
         name: method_id
         required: true
         type: string
+        x-example: getAllValuesForBloodTestComponent
       - in: path
         name: delta_time
         required: true
         type: integer
+        x-example: 30
       responses:
         200:
           description: search results matching criteria
