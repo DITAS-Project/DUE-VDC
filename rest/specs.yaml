@@ -17,7 +17,7 @@ tags:
   description: Compute availability of methods
 
 paths:
-  /availability/time/{delta_time}:
+  /v1/availability/time/{delta_time}:
     get:
       tags:
       - availability
@@ -41,7 +41,7 @@ paths:
               $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-  /availability/{method_id}/time/{delta_time}:
+  /v1/availability/{method_id}/time/{delta_time}:
     get:
       tags:
       - availability
@@ -114,8 +114,8 @@ definitions:
         type: integer
         example: 173
 
-# Added by API Auto Mocking Plugin
-host: virtserver.swaggerhub.com
-basePath: /caloc/DUE-VDC/1.0.0
-schemes:
- - https
+# Host and schemes dynamically retrieved if not set
+# host: virtserver.swaggerhub.com
+# schemes:
+#  - https
+basePath: /rest
