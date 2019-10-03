@@ -17,6 +17,25 @@ tags:
   description: Compute availability of methods
 
 paths:
+  /v1/availability:
+    get:
+      tags:
+      - availability
+      summary: Availability hello world
+      produces:
+      - application/json
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        400:
+          description: bad input parameter
   /v1/availability/time/{delta_time}:
     get:
       tags:
