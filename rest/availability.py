@@ -2,6 +2,7 @@ import json
 from flask import Blueprint
 from metrics import availability as avail
 from metrics import utils as ut
+from elasticsearch.exceptions import ConnectionError
 
 avail_page = Blueprint('availability', __name__)
 
@@ -18,9 +19,11 @@ def all_avail_of_minutes(minutes):
     # Time window with dummy data
     #computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
-
-    avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
+    try:
+        avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window)
+    except ConnectionError:
+        avail_dictionaries=[]
 
     return ut.json_response_formatter(avail_dictionaries)
 
@@ -31,9 +34,11 @@ def service_avail_of_minutes(method, minutes):
     #computation_timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
 
     computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
-
-    avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
+    try:
+        avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window, method=method)
+    except ConnectionError:
+        avail_dictionaries = []
     return ut.json_response_formatter(avail_dictionaries)
 
 
