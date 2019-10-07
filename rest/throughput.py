@@ -2,6 +2,7 @@ import json
 from flask import Blueprint
 from metrics import throughput as thrpt
 from metrics import utils as ut
+from elasticsearch.exceptions import ConnectionError
 
 throughput_page = Blueprint('throughput', __name__)
 
@@ -15,8 +16,11 @@ def all_throughput_of_minutes(minutes):
 
     computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
-    thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
+    try:
+        thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                 time_window=time_window)
+    except ConnectionError:
+        thrpt_dictionaries = []
 
     return ut.json_response_formatter(thrpt_dictionaries)
 
@@ -28,8 +32,11 @@ def service_throughput_of_minutes(method, minutes):
 
     computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
-    thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
+    try:
+        thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                 time_window=time_window, method=method)
+    except ConnectionError:
+        thrpt_dictionaries = []
 
     return ut.json_response_formatter(thrpt_dictionaries)
 

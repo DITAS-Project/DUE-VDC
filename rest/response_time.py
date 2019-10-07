@@ -2,6 +2,7 @@ import json
 from flask import Blueprint
 from metrics import response_time as resp_time
 from metrics import utils as ut
+from elasticsearch.exceptions import ConnectionError
 
 resp_time_page = Blueprint('response_time', __name__)
 
@@ -15,8 +16,11 @@ def all_resp_times_of_minutes(minutes):
 
 	computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
-	resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
+	try:
+		resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
 																			time_window=time_window)
+	except ConnectionError:
+		resp_time_dictionaries = []
 
 	return ut.json_response_formatter(resp_time_dictionaries)
 
@@ -28,8 +32,11 @@ def service_response_time_of_minutes(method, minutes):
 
 	computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
 
-	resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
+	try:
+		resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
 																			time_window=time_window, method=method)
+	except ConnectionError:
+		resp_time_dictionaries = []
 
 	return ut.json_response_formatter(resp_time_dictionaries)
 
