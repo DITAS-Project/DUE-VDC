@@ -17,7 +17,7 @@ tags:
   description: Compute availability of methods
 
 paths:
-  /v1/availability:
+  /v1/availability/:
     get:
       tags:
       - availability
@@ -36,7 +36,7 @@ paths:
                 type: string
         400:
           description: bad input parameter
-  /v1/availability/time/{delta_time}:
+  /v1/availability/time/{delta_time}/:
     get:
       tags:
       - availability
@@ -60,7 +60,7 @@ paths:
               $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-  /v1/availability/{method_id}/time/{delta_time}:
+  /v1/availability/{method_id}/time/{delta_time}/:
     get:
       tags:
       - availability
