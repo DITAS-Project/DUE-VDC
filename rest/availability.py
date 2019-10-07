@@ -1,6 +1,5 @@
 import json
 from flask import Blueprint
-from flask import Response
 from metrics import availability as avail
 from metrics import utils as ut
 
@@ -11,8 +10,7 @@ QUERY_CONTENT = '*'
 
 @avail_page.route('/')
 def hello():
-    js = json.dumps({'msg': "I'm the availability file!"})
-    return Response(js, status=200, mimetype='application/json')
+    return ut.json_response_formatter({'msg': "I'm the availability file!"})
 
 
 @avail_page.route('/time/<int:minutes>')
