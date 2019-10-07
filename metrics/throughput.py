@@ -62,8 +62,6 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
 
 
 def get_throughput_per_bp_and_method(computation_timestamp, time_window, method=''):
-    # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase
-    # TODO: filtrando per timestamp
     services = utils.get_services()
     aggregate_throughputs = []
 

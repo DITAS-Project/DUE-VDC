@@ -89,7 +89,7 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
             print("Found " + str(len(availabilities)) + " availabilites")
 
             for availability in availabilities:
-                print(availability)
+                #print(availability)
                 bp_id = availability['BluePrint-ID']
                 if bp_id not in aggregate_availabilities_per_service.keys():
                     aggregate_availabilities_per_service[bp_id] = {'attempts': 0, 'successes': 0}
