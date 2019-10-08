@@ -12,7 +12,7 @@ __status__ = "Development"
 
 
 #API_PREFIX = '/rest'
-API_PREFIX = ''
+API_PREFIX = '/'
 
 app = Flask(__name__)
 app.debug = True
