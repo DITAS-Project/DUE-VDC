@@ -43,7 +43,7 @@ def service_response_time_of_minutes(method, minutes):
 
 @resp_time_page.route('/')
 def hello():
-	return json.dumps({'msg': "I'm the response time file!"})
+	return ut.json_response_formatter({'msg': "I'm the response time file!"})
 
 
 @resp_time_page.route('/test')
