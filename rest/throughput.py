@@ -43,7 +43,7 @@ def service_throughput_of_minutes(method, minutes):
 
 @throughput_page.route('/')
 def hello():
-    return json.dumps({'msg': "I'm the throughput file!"})
+     return ut.json_response_formatter({'msg': "I'm the throughput file!"})
 
 
 @throughput_page.route('/test')
