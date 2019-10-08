@@ -1,5 +1,6 @@
 import json
 from flask import Flask
+from flask import Response
 from swagger_ui import flask_api_doc
 from rest.availability import avail_page
 from rest.response_time import resp_time_page
@@ -12,7 +13,7 @@ __status__ = "Development"
 
 
 #API_PREFIX = '/rest'
-API_PREFIX = '/'
+API_PREFIX = ''
 
 app = Flask(__name__)
 app.debug = True
@@ -29,13 +30,8 @@ app.register_blueprint(data_quality_page, url_prefix=API_PREFIX + '/v1/data_qual
 # Generating the docs
 flask_api_doc(app, config_path='./rest/specs.yaml', url_prefix='/api/doc', title='API doc')
 
+
 @app.route('/')
 def index():
-    resp = {'msg': 'This is /'}
-    return json.dumps(resp)
-
-
-@app.route(API_PREFIX)
-def index_msg():
     resp = {'msg': 'This is the REST API of DUE-VDC'}
-    return json.dumps(resp)
+    return Response(json.dumps(resp), status=200, mimetype='application/json')
