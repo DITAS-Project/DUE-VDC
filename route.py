@@ -11,7 +11,8 @@ __credits__ = ["Cataldo Calò", "Mirco Manzoni"]
 __status__ = "Development"
 
 
-API_PREFIX = '/rest'
+#API_PREFIX = '/rest'
+API_PREFIX = ''
 
 app = Flask(__name__)
 app.debug = True
