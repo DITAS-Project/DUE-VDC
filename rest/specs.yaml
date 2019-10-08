@@ -283,4 +283,4 @@ definitions:
 # host: virtserver.swaggerhub.com
 # schemes:
 #  - https
-basePath: /rest
+#basePath: /rest
