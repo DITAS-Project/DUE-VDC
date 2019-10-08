@@ -15,6 +15,10 @@ info:
 tags:
 - name: availability
   description: Compute availability of methods
+- name: throughput
+  description: Compute throughput of methods
+- name: response_time
+  description: Compute response time of methods
 
 paths:
   /v1/availability/:
@@ -65,6 +69,148 @@ paths:
       tags:
       - availability
       summary: Get availability of method with ID {method_id} in the last
+              {delta_time} minutes
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: method_id
+        required: true
+        type: string
+        x-example: getAllValuesForBloodTestComponent
+      - in: path
+        name: delta_time
+        required: true
+        type: integer
+        x-example: 30
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/MetricEntry'
+        400:
+          description: bad input parameter
+  /v1/throughput/:
+    get:
+      tags:
+      - throughput
+      summary: Throughput hello world
+      produces:
+      - application/json
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        400:
+          description: bad input parameter
+  /v1/throughput/time/{delta_time}:
+    get:
+      tags:
+      - throughput
+      summary: Get throughput of all methods in the last {delta_time} minutes
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: delta_time
+        required: true
+        type: integer
+        x-example: 30
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MetricEntry'
+        400:
+          description: bad input parameter
+  /v1/throughput/{method_id}/time/{delta_time}:
+    get:
+      tags:
+      - throughput
+      summary: Get throughput of method with ID {method_id} in the last
+              {delta_time} minutes
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: method_id
+        required: true
+        type: string
+        x-example: getAllValuesForBloodTestComponent
+      - in: path
+        name: delta_time
+        required: true
+        type: integer
+        x-example: 30
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/MetricEntry'
+        400:
+          description: bad input parameter
+  /v1/response_time/:
+    get:
+      tags:
+      - response_time
+      summary: Response time hello world
+      produces:
+      - application/json
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+        400:
+          description: bad input parameter
+  /v1/response_time/time/{delta_time}:
+    get:
+      tags:
+      - response_time
+      summary: Get response time of all methods in the last {delta_time} minutes
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: delta_time
+        required: true
+        type: integer
+        x-example: 30
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MetricEntry'
+        400:
+          description: bad input parameter
+  /v1/response_time/{method_id}/time/{delta_time}:
+    get:
+      tags:
+      - response_time
+      summary: Get response time of method with ID {method_id} in the last
               {delta_time} minutes
       produces:
       - application/json
