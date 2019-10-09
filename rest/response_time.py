@@ -36,7 +36,17 @@ def service_response_time_of_minutes(method, minutes):
 		resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
 																			time_window=time_window, method=method)
 	except ConnectionError:
-		resp_time_dictionaries = []
+		resp_time_dictionaries = {
+                    'method': '',
+                    'BluePrint-ID': '',
+                    'value': 0,
+                    'metric': 'response_time',
+                    'unit': 'percentage',
+                    '@timestamp': '',
+                    'delta': '',
+                    'delta_unit': '',
+                    'hits': ''
+                }
 
 	return ut.json_response_formatter(resp_time_dictionaries)
 

@@ -23,7 +23,7 @@ def all_avail_of_minutes(minutes):
         avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window)
     except ConnectionError:
-        avail_dictionaries=[]
+        avail_dictionaries = []
 
     return ut.json_response_formatter(avail_dictionaries)
 
@@ -38,7 +38,17 @@ def service_avail_of_minutes(method, minutes):
         avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                   time_window=time_window, method=method)
     except ConnectionError:
-        avail_dictionaries = []
+        avail_dictionaries = {
+                    'method': '',
+                    'BluePrint-ID': '',
+                    'value': 0,
+                    'metric': 'availability',
+                    'unit': 'percentage',
+                    '@timestamp': '',
+                    'delta': '',
+                    'delta_unit': '',
+                    'hits': ''
+                }
     return ut.json_response_formatter(avail_dictionaries)
 
 
