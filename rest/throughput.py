@@ -27,9 +27,9 @@ def all_throughput_of_minutes(minutes):
                     'metric': 'throughput',
                     'unit': 'percentage',
                     '@timestamp': '',
-                    'delta': '',
+                    'delta': 0,
                     'delta_unit': '',
-                    'hits': ''
+                    'hits': 0
                 }
 
     return ut.json_response_formatter(thrpt_dictionaries)
