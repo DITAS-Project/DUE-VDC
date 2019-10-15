@@ -45,9 +45,9 @@ def service_avail_of_minutes(method, minutes):
                     'metric': 'availability',
                     'unit': 'percentage',
                     '@timestamp': '',
-                    'delta': '',
+                    'delta': 0,
                     'delta_unit': '',
-                    'hits': ''
+                    'hits': 0
                 }
     return ut.json_response_formatter(avail_dictionaries)
 

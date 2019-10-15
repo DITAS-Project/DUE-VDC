@@ -43,9 +43,9 @@ def service_response_time_of_minutes(method, minutes):
                     'metric': 'response_time',
                     'unit': 'percentage',
                     '@timestamp': '',
-                    'delta': '',
+                    'delta': 0,
                     'delta_unit': '',
-                    'hits': ''
+                    'hits': 0
                 }
 
 	return ut.json_response_formatter(resp_time_dictionaries)

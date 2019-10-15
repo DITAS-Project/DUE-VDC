@@ -20,17 +20,7 @@ def all_throughput_of_minutes(minutes):
         thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                 time_window=time_window)
     except ConnectionError:
-        thrpt_dictionaries  = {
-                    'method': '',
-                    'BluePrint-ID': '',
-                    'value': 0,
-                    'metric': 'throughput',
-                    'unit': 'percentage',
-                    '@timestamp': '',
-                    'delta': '',
-                    'delta_unit': '',
-                    'hits': ''
-                }
+        thrpt_dictionaries  = []
 
     return ut.json_response_formatter(thrpt_dictionaries)
 
@@ -46,7 +36,17 @@ def service_throughput_of_minutes(method, minutes):
         thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
                                                                 time_window=time_window, method=method)
     except ConnectionError:
-        thrpt_dictionaries = []
+        thrpt_dictionaries = {
+                    'method': '',
+                    'BluePrint-ID': '',
+                    'value': 0,
+                    'metric': 'throughput',
+                    'unit': 'percentage',
+                    '@timestamp': '',
+                    'delta': 0,
+                    'delta_unit': '',
+                    'hits': 0
+                }
 
     return ut.json_response_formatter(thrpt_dictionaries)
 
