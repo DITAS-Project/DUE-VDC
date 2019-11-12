@@ -19,6 +19,8 @@ tags:
   description: Compute throughput of methods
 - name: response_time
   description: Compute response time of methods
+- name: debug
+  description: Check the status of the ElasticSearch
 
 paths:
   /v1/availability/:
@@ -232,6 +234,25 @@ paths:
           description: search results matching criteria
           schema:
             $ref: '#/definitions/MetricEntry'
+        400:
+          description: bad input parameter
+  /debug_es/:
+    get:
+      tags:
+      - debug
+      summary: Check the status of ElasticSearch
+      produces:
+      - application/json
+      responses:
+        404:
+          description: Not Found
+        200:
+          description: search results matching criteria
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
         400:
           description: bad input parameter
 definitions:

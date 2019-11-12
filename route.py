@@ -6,6 +6,8 @@ from rest.availability import avail_page
 from rest.response_time import resp_time_page
 from rest.throughput import throughput_page
 from rest.data_quality import data_quality_page
+from elasticsearch.exceptions import ConnectionError
+from metrics import utils
 
 __author__ = "Cataldo Calò, Mirco Manzoni"
 __credits__ = ["Cataldo Calò", "Mirco Manzoni"]
@@ -35,3 +37,14 @@ flask_api_doc(app, config_path='./rest/specs.yaml', url_prefix='/api/doc', title
 def index():
     resp = {'msg': 'This is the REST API of DUE-VDC'}
     return Response(json.dumps(resp), status=200, mimetype='application/json')
+
+
+@app.route('/debug_es')
+def ping_es():
+    try:
+        utils.es_query()
+        output = 'ElasticSearch is online.'
+    except ConnectionError:
+        output = 'ElasticSearch is offline.'
+    print(output)
+    return Response(json.dumps(output), status=200, mimetype='application/json')
