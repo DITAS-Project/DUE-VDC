@@ -236,7 +236,7 @@ paths:
             $ref: '#/definitions/MetricEntry'
         400:
           description: bad input parameter
-  /debug_es/:
+  /debug_es:
     get:
       tags:
       - debug
