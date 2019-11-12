@@ -47,4 +47,4 @@ def ping_es():
     except ConnectionError:
         output = 'ElasticSearch is offline.'
     print(output)
-    return Response(json.dumps(output), status=200, mimetype='application/json')
+    return utils.json_response_formatter({'msg': output})
