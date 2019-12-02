@@ -11,6 +11,7 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
     res = utils.es_query(query=query_ids)
     total_hits = res['hits']['total']
+    print(total_hits)
     res = utils.es_query(query=query_ids, size=total_hits)
     attempts_successes_dict = {}
     for hit in res['hits']['hits']:

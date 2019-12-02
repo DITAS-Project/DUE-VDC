@@ -4,11 +4,15 @@ import dateutil.parser
 from elasticsearch import Elasticsearch
 from flask import Response
 
-
 TEMP_CONF_FILE = 'conf/conf.json'
 TEMP_SERVICES_FILE = 'conf/services.json'
 TEMP_INDEX = "tubvdc-*"
 
+CONF_CONNECTIONS = "connections"
+CONF_URL = 'ElasticSearchURL'
+CONF_AUTH = 'ElasticBasicAuth'
+CONF_USER = 'ElasticUser'
+CONF_PASSWORD = 'ElasticPassword'
 
 def format_time_window(t0, t1):
     start_time = t0.isoformat()
@@ -30,12 +34,22 @@ def get_timestamp_timewindow(minutes):
     t1 = datetime.datetime.now(local_timezone)
     t0 = t1 - datetime.timedelta(minutes=minutes)
     return format_time_window(t0, t1)
-
-
+'''
+def get_host_port(url):
+    parse = urlparse(url)
+    return parse., parse.port
+'''
 def es_query(query=None, size=10, es_index=TEMP_INDEX):
     with open(TEMP_CONF_FILE) as conf_file:
         conf_data = json.load(conf_file)
-    es = Elasticsearch(hosts=conf_data['connections'])
+    es_host = []
+    for host in conf_data[CONF_CONNECTIONS]:
+        es_host.append(host[CONF_URL])
+    if conf_data[CONF_AUTH]:
+        es = Elasticsearch(hosts=es_host, http_auth=(conf_data[CONF_USER], conf_data[CONF_PASSWORD]))
+    else:
+        es = Elasticsearch(hosts=es_host)
+    print(es)
 
     if query is None:
         query = '*'

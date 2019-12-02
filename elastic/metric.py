@@ -21,7 +21,7 @@ class Metric(ABC):
     def format_time_window(self, t0, t1):
         start_time = t0.isoformat()
         end_time = t1.isoformat()
-        return end_time, f'@timestamp:[{start_time} TO {end_time}]'
+        return end_time, f'[{start_time} TO {end_time}]'
 
     @abstractmethod
     def compute_metric(self, query_content, update_interval):

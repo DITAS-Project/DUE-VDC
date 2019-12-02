@@ -1,10 +1,12 @@
 {
 	"connections": [
 		{
-			"host": "localhost",
-			"port": 9200
+			"ElasticSearchURL":"http://localhost:9200"
 		}
 	],
+	"ElasticBasicAuth": true,
+	"ElasticUser":"{{.elasticsearch_user}}",
+	"ElasticPassword":"{{.elasticsearch_password}}",
 	"index_qos": "tubvdc-*",
 	"index_data_quality": "tubvdc-*",
 	"availability": {
