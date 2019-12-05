@@ -1,4 +1,5 @@
 import pytz
+import sys
 from datetime import datetime
 from metrics import utils
 
@@ -7,11 +8,11 @@ QUERY_CONTENT = '*'
 
 # return a list of availabilities computed per call
 def get_service_availability_per_hit(service, computation_timestamp, time_window):
-    print(service)
+    print(service,file=sys.stderr)
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
     res = utils.es_query(query=query_ids)
     total_hits = res['hits']['total']
-    print(total_hits)
+    print(total_hits,file=sys.stderr)
     res = utils.es_query(query=query_ids, size=total_hits)
     attempts_successes_dict = {}
     for hit in res['hits']['hits']:
@@ -42,7 +43,7 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
             if 'response.code' in source and source['response.code'] < 500:
                 attempts_successes_dict[blueprint_id][request_id]['success'] += 1
             elif 'response.code' not in source:
-                print('Response hit without response.code!!!')
+                print('Response hit without response.code!!!',file=sys.stderr)
 
     availabilities = []
     for bp_id in attempts_successes_dict.keys():
@@ -80,14 +81,14 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
     aggregate_availabilities = []
 
     now_ts = datetime.now(pytz.utc)
-    print("Found " + str(len(services)) + " services")
+    print("Found " + str(len(services)) + " services",file=sys.stderr)
     for service in services:
         if method == '' or method == service:
             availabilities = get_service_availability_per_hit(service, computation_timestamp, time_window)
             aggregate_availabilities_per_service = {}
             infos_per_service = {}
 
-            print("Found " + str(len(availabilities)) + " availabilites")
+            print("Found " + str(len(availabilities)) + " availabilites",file=sys.stderr)
 
             for availability in availabilities:
                 #print(availability)
@@ -128,7 +129,7 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
                 aggregate_availabilities.append(dict)
 
 
-    print(aggregate_availabilities)
+    print(aggregate_availabilities,file=sys.stderr)
     return aggregate_availabilities
 
 

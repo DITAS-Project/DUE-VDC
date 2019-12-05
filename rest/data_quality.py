@@ -1,4 +1,5 @@
 import json
+import sys
 from flask import Blueprint, request
 from rest.data_quality_metrics.accuracy import Accuracy
 from rest.data_quality_metrics.completeness import Completeness
@@ -27,7 +28,7 @@ def compute_data_quality_metrics():
     # non avendo idea di dove troveremo il nome del metodo al momento il sistema funziona con questo falso nome
     # TODO specificare il metodo per ottenere il nome del metodo della richiesta
     method_from_http = 'AMethod'
-    print('processing method ' + method_from_http)
+    print('processing method ' + method_from_http,file=sys.stderr)
     for method_id in bp[BP_INTERNAL_STRUCTURE][IN_TESTING_OUTPUT_DATA]:
         if method_id[IN_TOD_METHOD_ID] == method_from_http:
             method = deepcopy(method_id)

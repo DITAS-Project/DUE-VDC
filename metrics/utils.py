@@ -1,6 +1,7 @@
 import json
 import datetime
 import dateutil.parser
+import sys
 from elasticsearch import Elasticsearch
 from flask import Response
 
@@ -49,11 +50,11 @@ def es_query(query=None, size=10, es_index=TEMP_INDEX):
         es = Elasticsearch(hosts=es_host, http_auth=(conf_data[CONF_USER], conf_data[CONF_PASSWORD]))
     else:
         es = Elasticsearch(hosts=es_host)
-    print(es)
+    print(es,file=sys.stderr)
 
     if query is None:
         query = '*'
-    print(query)
+    print(query,file=sys.stderr)
     return es.search(index=es_index, q=query, size=size)
 
 

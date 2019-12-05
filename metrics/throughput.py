@@ -1,4 +1,5 @@
 import pytz
+import sys
 import numpy as np
 from datetime import datetime
 from metrics import utils
@@ -8,7 +9,7 @@ QUERY_CONTENT = '*'
 
 # return a list of throughputs computed per call
 def get_service_throughput_per_hit(service, computation_timestamp, time_window):
-    print(service)
+    print(service,file=sys.stderr)
     query_ids = QUERY_CONTENT + f' AND request.operationID:{service} AND @timestamp:{time_window}'
     res = utils.es_query(query=query_ids)
     total_hits = res['hits']['total']

@@ -1,4 +1,5 @@
 import json
+import sys
 from flask import Flask
 from flask import Response
 from swagger_ui import flask_api_doc
@@ -46,5 +47,5 @@ def ping_es():
         output = 'ElasticSearch is online.'
     except ConnectionError:
         output = 'ElasticSearch is offline.'
-    print(output)
+    print(output,file=sys.stderr)
     return utils.json_response_formatter({'msg': output})
