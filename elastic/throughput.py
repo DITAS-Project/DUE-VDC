@@ -1,5 +1,6 @@
 import time
 import threading
+import sys
 from .metric import Metric
 from metrics.throughput import *
 
@@ -20,7 +21,7 @@ class Throughput(Metric):
                 hits = get_service_throughput_per_hit(service, timestamp, time_window)
                 for hit in hits:
                     self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'], hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
-                    print()
+                    print('availability data written',file=sys.stderr)
 
     def launch_sync_update(self):
         queries = self.conf_data['throughput']['queries']

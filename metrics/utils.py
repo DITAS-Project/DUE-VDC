@@ -46,11 +46,13 @@ def es_query(query=None, size=10):
         es = Elasticsearch(hosts=es_host, http_auth=(conf_data[CONF_USER], conf_data[CONF_PASSWORD]))
     else:
         es = Elasticsearch(hosts=es_host)
+
     es_index = conf_data[CONF_QOS]
     sys.stderr.write("query index: " + es_index + "\n")
+
     if query is None:
         query = '*'
-    print(query)
+    print(query,file=sys.stderr)
     return es.search(index=es_index, q=query, size=size)
 
 
