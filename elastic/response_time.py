@@ -3,7 +3,7 @@ import threading
 import sys
 from .metric import Metric
 from metrics.response_time import *
-
+from elasticsearch.exceptions import ConnectionError
 
 class ResponseTime(Metric):
     def __init__(self, conf_path='conf/conf.json', services_path='conf/services.json'):
@@ -11,19 +11,22 @@ class ResponseTime(Metric):
 
     def compute_metric(self, query_content, update_interval):
         while True:
-            # Compute time window of interest for the query
-            t0 = datetime.now()
-            time.sleep(update_interval)
-            t1 = datetime.now()
-            services = self.read_services()
-            timestamp, time_window = self.format_time_window(t0, t1)
-            #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
-            for service in services:
-                hits = get_service_response_times_per_hit(service, timestamp, time_window)
-                for hit in hits:
-                    self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'],
-                               hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
-                    print('availability data written',file=sys.stderr)
+            try:
+                # Compute time window of interest for the query
+                    t0 = datetime.now()
+                    time.sleep(update_interval)
+                    t1 = datetime.now()
+                    services = self.read_services()
+                    timestamp, time_window = self.format_time_window(t0, t1)
+                    #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+                    for service in services:
+                        hits = get_service_response_times_per_hit(service, timestamp, time_window)
+                        for hit in hits:
+                            self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'],
+                                       hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
+                            print('availability data written',file=sys.stderr)
+            except ConnectionError:
+                print('ElasticSearch is offline.',file=sys.stderr)
 
     def launch_sync_update(self):
         queries = self.conf_data['response_time']['queries']
