@@ -39,6 +39,7 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
 
     return times
 
+
 def get_response_times_per_bp_and_method(computation_timestamp, time_window, method=''):
     # TODO: aggregare tutte le metriche puntuali calcolate nella prima fase
     # TODO: filtrando per timestamp
@@ -87,7 +88,6 @@ def get_response_times_per_bp_and_method(computation_timestamp, time_window, met
 
 def all_response_times_of_minutes(minutes):
     timestamp, time_window = utils.get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
     # Read list of services, of which to compute the metric
     services = utils.get_services()
     ret_dict = {}
@@ -97,7 +97,6 @@ def all_response_times_of_minutes(minutes):
 
 
 def service_response_times_of_minutes(service, minutes):
-    # timestamp, time_window = get_timestamp_timewindow(minutes)
-    timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
+    timestamp, time_window = utils.get_timestamp_timewindow(minutes)
     ret_dict = {service: get_service_response_times_per_hit(service, timestamp, time_window)}
     return ret_dict

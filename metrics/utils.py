@@ -3,16 +3,17 @@ import datetime
 import dateutil.parser
 from elasticsearch import Elasticsearch
 from flask import Response
+import sys
 
 TEMP_CONF_FILE = 'conf/conf.json'
 TEMP_SERVICES_FILE = 'conf/services.json'
-TEMP_INDEX = "tubvdc-*"
 
 CONF_CONNECTIONS = "connections"
 CONF_URL = 'ElasticSearchURL'
 CONF_AUTH = 'ElasticBasicAuth'
 CONF_USER = 'ElasticUser'
 CONF_PASSWORD = 'ElasticPassword'
+CONF_QOS = 'index_qos'
 
 def format_time_window(t0, t1):
     start_time = t0.isoformat()
@@ -21,9 +22,8 @@ def format_time_window(t0, t1):
 
 
 def extract_bp_id_vdc_id(es_index, separator):
-    blueprint_id, vdc_instance_id = 'fakebp', es_index.split(separator)[0]
     # TODO: when data will be available on ES, uncomment the following line
-    #blueprint_id, vdc_instance_id = es_index.split(separator)
+    blueprint_id, vdc_instance_id = es_index.split(separator)
 
     return blueprint_id, vdc_instance_id
 
@@ -34,12 +34,9 @@ def get_timestamp_timewindow(minutes):
     t1 = datetime.datetime.now(local_timezone)
     t0 = t1 - datetime.timedelta(minutes=minutes)
     return format_time_window(t0, t1)
-'''
-def get_host_port(url):
-    parse = urlparse(url)
-    return parse., parse.port
-'''
-def es_query(query=None, size=10, es_index=TEMP_INDEX):
+
+
+def es_query(query=None, size=10):
     with open(TEMP_CONF_FILE) as conf_file:
         conf_data = json.load(conf_file)
     es_host = []
@@ -49,8 +46,8 @@ def es_query(query=None, size=10, es_index=TEMP_INDEX):
         es = Elasticsearch(hosts=es_host, http_auth=(conf_data[CONF_USER], conf_data[CONF_PASSWORD]))
     else:
         es = Elasticsearch(hosts=es_host)
-    print(es)
-
+    es_index = conf_data[CONF_QOS]
+    sys.stderr.write("query index: " + es_index + "\n")
     if query is None:
         query = '*'
     print(query)
