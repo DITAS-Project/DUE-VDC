@@ -1,6 +1,7 @@
 {
 	"services": [
-		"getAllValuesForBloodTestComponent",
-		"getBloodTestComponentAverage"
+		"GetStreamingData",
+		"GetSimplifiedDiagnostic",
+		"GetFullDiagnostic"
 	]
 }
