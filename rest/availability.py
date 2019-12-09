@@ -36,10 +36,10 @@ def service_avail_of_minutes(method, minutes):
     computation_timestamp, time_window = ut.get_timestamp_timewindow(minutes)
     try:
         avail_dictionaries = avail.get_availability_per_bp_and_method(computation_timestamp=computation_timestamp,
-                                                                  time_window=time_window, method=method)
-    except ConnectionError:
+                                                                  time_window=time_window, method=method)[0]
+    except (ConnectionError,IndexError):
         avail_dictionaries = {
-                    'method': '',
+                    'method': method,
                     'BluePrint-ID': '',
                     'value': 0,
                     'metric': 'availability',

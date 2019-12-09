@@ -34,10 +34,10 @@ def service_throughput_of_minutes(method, minutes):
 
     try:
         thrpt_dictionaries = thrpt.get_throughput_per_bp_and_method(computation_timestamp=computation_timestamp,
-                                                                time_window=time_window, method=method)
-    except ConnectionError:
+                                                                time_window=time_window, method=method)[0]
+    except (ConnectionError,IndexError):
         thrpt_dictionaries = {
-                    'method': '',
+                    'method': method,
                     'BluePrint-ID': '',
                     'value': 0,
                     'metric': 'throughput',

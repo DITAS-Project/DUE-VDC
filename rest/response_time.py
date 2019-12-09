@@ -34,10 +34,10 @@ def service_response_time_of_minutes(method, minutes):
 
 	try:
 		resp_time_dictionaries = resp_time.get_response_times_per_bp_and_method(computation_timestamp=computation_timestamp,
-																			time_window=time_window, method=method)
-	except ConnectionError:
+																			time_window=time_window, method=method)[0]
+	except (ConnectionError,IndexError):
 		resp_time_dictionaries = {
-                    'method': '',
+                    'method': method,
                     'BluePrint-ID': '',
                     'value': 0,
                     'metric': 'response_time',
