@@ -23,7 +23,7 @@ def format_time_window(t0, t1):
 
 def extract_bp_id_vdc_id(es_index, separator):
     # TODO: when data will be available on ES, uncomment the following line
-    blueprint_id, vdc_instance_id = es_index.split(separator)
+    blueprint_id, vdc_instance_id, foo, bar, asd = es_index.split(separator)
 
     return blueprint_id, vdc_instance_id
 
