@@ -7,8 +7,8 @@ from elasticsearch.exceptions import ConnectionError
 
 
 class Availability(Metric):
-    def __init__(self, conf_path='conf/conf.json', services_path='conf/services.json'):
-        super().__init__(conf_path, services_path)
+    def __init__(self, conf_path='conf/conf.json'):
+        super().__init__(conf_path)
 
     def compute_metric(self, query_content, update_interval):
         while True:
@@ -18,7 +18,7 @@ class Availability(Metric):
                 time.sleep(update_interval)
                 t1 = datetime.now()
                 # Read list of services, of which to compute the metric
-                services = self.read_services()
+                services = utils.get_services()
                 timestamp, time_window = self.format_time_window(t0, t1)
                 #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
                 for service in services:

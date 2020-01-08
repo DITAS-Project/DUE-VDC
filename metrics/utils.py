@@ -6,7 +6,11 @@ from flask import Response
 import sys
 
 TEMP_CONF_FILE = 'conf/conf.json'
-TEMP_SERVICES_FILE = 'conf/services.json'
+CONCRETE_BLUEPRINT_PATH = 'conf/blueprint.json'
+
+CONCRETE_ID = '_id'
+CONCRETE_ABSTRACT_PROPERTIES = 'ABSTRACT_PROPERTIES'
+CONCRETE_METHOD_ID = 'method_id'
 
 CONF_CONNECTIONS = "connections"
 CONF_URL = 'ElasticSearchURL'
@@ -21,11 +25,10 @@ def format_time_window(t0, t1):
     return end_time, f'[{start_time} TO {end_time}]'
 
 
-def extract_bp_id_vdc_id(es_index, separator):
-    # TODO: when data will be available on ES, uncomment the following line
-    blueprint_id, vdc_instance_id, foo, bar, asd = es_index.split(separator)
-
-    return blueprint_id, vdc_instance_id
+def extract_vdc_id(es_index, separator):
+    sep = es_index.split(separator)
+    vdc_instance_id = sep[0] + '-' + sep[1]
+    return vdc_instance_id
 
 
 # Compute time window of interest for the query
@@ -56,14 +59,13 @@ def es_query(query=None, size=10):
     return es.search(index=es_index, q=query, size=size)
 
 
-def read_services_from_file(filepath):
-    with open(filepath) as services_file:
-        services = json.load(services_file)
-    return services['services']
-
-
 def get_services():
-    return read_services_from_file(TEMP_SERVICES_FILE)
+    with open(CONCRETE_BLUEPRINT_PATH) as bp_file:
+        bp = json.load(bp_file)
+    services = []
+    for method in bp[CONCRETE_ABSTRACT_PROPERTIES]:
+        services.append(method[CONCRETE_METHOD_ID])
+    return services
 
 
 def json_response_formatter(dictionary):
@@ -73,4 +75,9 @@ def json_response_formatter(dictionary):
 
 def parse_timestamp(datestring):
     return dateutil.parser.parse(datestring)
+
+def get_blueprint_id():
+    with open(CONCRETE_BLUEPRINT_PATH) as bp_file:
+        bp = json.load(bp_file)
+    return bp[CONCRETE_ID]
 

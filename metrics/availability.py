@@ -16,7 +16,8 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
     res = utils.es_query(query=query_ids, size=total_hits)
     attempts_successes_dict = {}
     for hit in res['hits']['hits']:
-        blueprint_id, vdc_instance_id = utils.extract_bp_id_vdc_id(hit['_index'], '-')
+        blueprint_id = utils.get_blueprint_id()
+        vdc_instance_id = utils.extract_vdc_id(hit['_index'], '-')
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
