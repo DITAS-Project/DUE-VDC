@@ -37,7 +37,7 @@ class Metric(ABC):
         body = {
             'meter': {
                 'key': self.__format_key(bp_id, vdc_inst, request_id, operation_id),
-                'operationId': operation_id,
+                'operationID': operation_id,
                 'value': value,
                 'name': name,
                 'unit': unit,
