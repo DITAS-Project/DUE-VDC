@@ -58,10 +58,10 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
             timestamp = attempts_successes['hit-timestamp']
             while attempt > 0:
                 attempt -= 1
-                value = False
+                value = 0
                 if success > 0:
                     success -= 1
-                    value = True
+                    value = 1
                 metric_per_hit = {"BluePrint-ID": blueprint_id,
                                   "VDC-Instance-ID": vdc_instance_id,
                                   "Operation-ID": operation_id,
@@ -101,7 +101,7 @@ def get_availability_per_bp_and_method(computation_timestamp, time_window, metho
                 # Since attempt is 1 only for the request, and 0 for the response there is no risk
                 # to add twice each client request (1 for request hit, and 1 for the response hit)
                 aggregate_availabilities_per_service[bp_id]['attempts'] += 1
-                if availability['value']:
+                if availability['value'] == 1:
                     aggregate_availabilities_per_service[bp_id]['successes'] += 1
 
                 # Here take the timestamp of the hit: if ts < oldest_ts then oldest_ts = ts
