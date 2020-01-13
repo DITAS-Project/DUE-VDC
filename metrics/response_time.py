@@ -22,7 +22,7 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
-        if 'request.requestTime' in source and 'response.code' in source:
+        if 'request.requestTime' in source and 'request.method' in source and source['request.method'] != 'OPTIONS':
             # Fixing the name of the attribute: it is actually a response time
             response_time = source['request.requestTime'] / 1000000000
 
@@ -32,7 +32,7 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
                               "Request-ID": request_id,
                               "metric": "response time",
                               "unit": "second",
-                              "value": response_time,
+                              "value": float(response_time),
                               "hit-timestamp": source['@timestamp'],
                               "@timestamp": computation_timestamp
                               }

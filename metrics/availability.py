@@ -73,7 +73,7 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
                                   "Request-ID": request_id,
                                   "metric": "availability",
                                   "unit": "Boolean",
-                                  "value": value,
+                                  "value": float(value),
                                   "hit-timestamp": timestamp,
                                   "@timestamp": computation_timestamp
                                   }
