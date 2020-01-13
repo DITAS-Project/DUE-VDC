@@ -29,6 +29,7 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
                                                 "Operation-ID": operation_id,
                                                 'Request-ID': request_id,
                                                 'attempt': 0,
+                                                'response': 0,                 
                                                 'success': 0,
                                                 "hit-timestamp": source['@timestamp']
                                                  }
@@ -36,31 +37,35 @@ def get_service_availability_per_hit(service, computation_timestamp, time_window
         # For each request there is a corresponding response, so the request is counted as an attempt
         # and if the response is found, then it is counted as a success. In this way a response not found
         # is automatically accounted as a fail.
-        if 'request.length' in source and source['request.length'] > 0:
+        if 'request.method' in source and source['request.method'] != 'OPTIONS':
             # It is a request hit
+            print('Found a request',file=sys.stderr)
             attempts_successes_dict[blueprint_id][request_id]['attempt'] += 1
-        elif 'response.length' in source and source['response.length'] > 0:
+        elif 'response.code' in source:
+            print('Found a response',file=sys.stderr)
             # Fixing the name of the attribute: it is actually a response time
+            attempts_successes_dict[blueprint_id][request_id]['response'] += 1
             if 'response.code' in source and source['response.code'] < 500:
                 attempts_successes_dict[blueprint_id][request_id]['success'] += 1
             elif 'response.code' not in source:
                 print('Response hit without response.code!!!',file=sys.stderr)
 
     availabilities = []
+    # for each blueprint
     for bp_id in attempts_successes_dict.keys():
+        # for each request
         for attempts_successes in attempts_successes_dict[bp_id].values():
             blueprint_id = attempts_successes['BluePrint-ID']
             operation_id = attempts_successes['Operation-ID']
             vdc_instance_id = attempts_successes['VDC-Instance-ID']
             request_id = attempts_successes['Request-ID']
             attempt = attempts_successes['attempt']
+            response = attempts_successes['response']
             success = attempts_successes['success']
             timestamp = attempts_successes['hit-timestamp']
-            while attempt > 0:
-                attempt -= 1
+            if response > 0 and attempt > 0:
                 value = 0
                 if success > 0:
-                    success -= 1
                     value = 1
                 metric_per_hit = {"BluePrint-ID": blueprint_id,
                                   "VDC-Instance-ID": vdc_instance_id,

@@ -22,22 +22,22 @@ def get_service_response_times_per_hit(service, computation_timestamp, time_wind
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
-        if 'request.requestTime' in source:
+        if 'request.requestTime' in source and 'response.code' in source:
             # Fixing the name of the attribute: it is actually a response time
-            response_time = source['request.requestTime']
+            response_time = source['request.requestTime'] / 1000000000
 
-        metric_per_hit = {"BluePrint-ID": blueprint_id,
-                          "VDC-Instance-ID": vdc_instance_id,
-                          "Operation-ID": operation_id,
-                          "Request-ID": request_id,
-                          "metric": "response time",
-                          "unit": "second",
-                          "value": response_time,
-                          "hit-timestamp": source['@timestamp'],
-                          "@timestamp": computation_timestamp
-                          }
+            metric_per_hit = {"BluePrint-ID": blueprint_id,
+                              "VDC-Instance-ID": vdc_instance_id,
+                              "Operation-ID": operation_id,
+                              "Request-ID": request_id,
+                              "metric": "response time",
+                              "unit": "second",
+                              "value": response_time,
+                              "hit-timestamp": source['@timestamp'],
+                              "@timestamp": computation_timestamp
+                              }
 
-        times.append(metric_per_hit)
+            times.append(metric_per_hit)
 
     return times
 

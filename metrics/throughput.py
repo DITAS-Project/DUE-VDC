@@ -22,21 +22,21 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
         source = hit['_source']
         request_id = source['request.id']
         operation_id = source['request.operationID']
-        if blueprint_id not in throughput_dict.keys():
-            throughput_dict[blueprint_id] = {}
-        if request_id not in throughput_dict[blueprint_id].keys():
-            throughput_dict[blueprint_id][request_id] = {"BluePrint-ID": blueprint_id,
-                                                        "VDC-Instance-ID": vdc_instance_id,
-                                                        "Operation-ID": operation_id,
-                                                        'Request-ID': request_id,
-                                                        'response-length': 0,
-                                                        'request-time': 0,
-                                                        "hit-timestamp": source['@timestamp']
-                                                        }
-        if 'response.length' in source:
-            throughput_dict[blueprint_id][request_id]['response-length'] += source['response.length']
-        if 'request.requestTime' in source:
-            throughput_dict[blueprint_id][request_id]['request-time'] += source['request.requestTime']
+        if 'response.code' in source:
+            if blueprint_id not in throughput_dict.keys():
+                throughput_dict[blueprint_id] = {}
+            if request_id not in throughput_dict[blueprint_id].keys():
+                throughput_dict[blueprint_id][request_id] = {"BluePrint-ID": blueprint_id,
+                                                            "VDC-Instance-ID": vdc_instance_id,
+                                                            "Operation-ID": operation_id,
+                                                            'Request-ID': request_id,
+                                                            'response-length': 0,
+                                                            'request-time': 0,
+                                                            "hit-timestamp": source['@timestamp']
+                                                            }
+            if 'response.length' in source and 'request.requestTime' in source:
+                throughput_dict[blueprint_id][request_id]['response-length'] += source['response.length']
+                throughput_dict[blueprint_id][request_id]['request-time'] += source['request.requestTime']
 
     throughputs = []
     for bp_id in throughput_dict.keys():
@@ -48,13 +48,16 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
             length = throughput['response-length']
             time = throughput['request-time']
             timestamp = throughput['hit-timestamp']
+            value = 0
+            if time > 0:
+                value = length / (time / 1000000000)
             metric_per_hit = {"BluePrint-ID": blueprint_id,
                             "VDC-Instance-ID": vdc_instance_id,
                             "Operation-ID": operation_id,
                             "Request-ID": request_id,
                             "metric": "throughput",
                             "unit": "bytesPerSecond",
-                            "value": length / time * 1e9,
+                            "value": value,
                             "hit-timestamp": timestamp,
                             "@timestamp": computation_timestamp
                             }
