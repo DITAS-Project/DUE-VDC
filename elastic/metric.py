@@ -1,15 +1,28 @@
 from elasticsearch import Elasticsearch
 import json
 import uuid
+import sys
 from abc import ABC, abstractmethod
 
+CONF_CONNECTIONS = "connections"
+CONF_URL = 'ElasticSearchURL'
+CONF_AUTH = 'ElasticBasicAuth'
+CONF_USER = 'ElasticUser'
+CONF_PASSWORD = 'ElasticPassword'
+CONF_QOS = 'index_qos'
 
 class Metric(ABC):
     def __init__(self, conf_path):
         with open(conf_path) as conf_file:
             conf_data = json.load(conf_file)
-        self.es = Elasticsearch(hosts=conf_data['connections'])
-        self.index = conf_data['index_qos']
+        es_host = []
+        for host in conf_data[CONF_CONNECTIONS]:
+            es_host.append(host[CONF_URL])
+        if conf_data[CONF_AUTH]:
+            self.es = Elasticsearch(hosts=es_host, http_auth=(conf_data[CONF_USER], conf_data[CONF_PASSWORD]))
+        else:
+            self.es = Elasticsearch(hosts=es_host)
+        self.index = conf_data[CONF_QOS]
         self.conf_data = conf_data
 
     def format_time_window(self, t0, t1):

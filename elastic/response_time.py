@@ -26,7 +26,7 @@ class ResponseTime(Metric):
                         for hit in hits:
                             self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'],
                                        hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
-                            print('availability data written',file=sys.stderr)
+                            print('response time data written',file=sys.stderr)
             except ConnectionError:
                 traceback.print_exc(file=sys.stderr)
 
