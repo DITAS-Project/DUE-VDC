@@ -1,6 +1,8 @@
 import time
 import threading
 import sys
+import traceback
+from datetime import datetime, timedelta
 from .metric import Metric
 from metrics.throughput import *
 from elasticsearch.exceptions import ConnectionError
@@ -13,9 +15,9 @@ class Throughput(Metric):
     def compute_metric(self, query_content, update_interval):
         while True:
             try:
-                t0 = datetime.now()
+                t0 = datetime.now() - timedelta(minutes=1)
                 time.sleep(update_interval)
-                t1 = datetime.now()
+                t1 = datetime.now() - timedelta(minutes=1)
                 services = utils.get_services()
                 timestamp, time_window = self.format_time_window(t0, t1)
                 #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
@@ -25,7 +27,7 @@ class Throughput(Metric):
                         self.write(hit['BluePrint-ID'], hit['VDC-Instance-ID'], hit['Request-ID'], hit['Operation-ID'], hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
                         print('availability data written',file=sys.stderr)
             except ConnectionError:
-                print('ElasticSearch is offline.',file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
                     
 
     def launch_sync_update(self):

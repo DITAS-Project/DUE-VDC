@@ -1,6 +1,8 @@
 import time
 import threading
 import sys
+import traceback
+from datetime import datetime, timedelta
 from .metric import Metric
 from metrics.response_time import *
 from elasticsearch.exceptions import ConnectionError
@@ -13,9 +15,9 @@ class ResponseTime(Metric):
         while True:
             try:
                 # Compute time window of interest for the query
-                    t0 = datetime.now()
+                    t0 = datetime.now() - timedelta(minutes=1)
                     time.sleep(update_interval)
-                    t1 = datetime.now()
+                    t1 = datetime.now() - timedelta(minutes=1)
                     services = utils.get_services()
                     timestamp, time_window = self.format_time_window(t0, t1)
                     #timestamp, time_window = '2016-06-20T22:28:46', '[2018-06-20T22:28:46 TO 2020-06-20T22:36:41]'
@@ -26,7 +28,7 @@ class ResponseTime(Metric):
                                        hit['value'], hit['metric'], hit['unit'], hit['hit-timestamp'], hit['@timestamp'])
                             print('availability data written',file=sys.stderr)
             except ConnectionError:
-                print('ElasticSearch is offline.',file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
 
     def launch_sync_update(self):
         queries = self.conf_data['response_time']['queries']
