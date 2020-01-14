@@ -50,13 +50,13 @@ def get_service_throughput_per_hit(service, computation_timestamp, time_window):
             timestamp = throughput['hit-timestamp']
             value = 0
             if time > 0 and length > 0:
-                value = length / (time / 1000000000)
+                value = (length / (time / 1000000000))/ (1024 * 1024)
                 metric_per_hit = {"BluePrint-ID": blueprint_id,
                                 "VDC-Instance-ID": vdc_instance_id,
                                 "Operation-ID": operation_id,
                                 "Request-ID": request_id,
                                 "metric": "throughput",
-                                "unit": "bytesPerSecond",
+                                "unit": "MB/s",
                                 "value": float(value),
                                 "hit-timestamp": timestamp,
                                 "@timestamp": computation_timestamp
@@ -100,7 +100,7 @@ def get_throughput_per_bp_and_method(computation_timestamp, time_window, method=
                     'min': np.array(aggregate_throughputs_per_service[bp_id]).min(),
                     'max': np.array(aggregate_throughputs_per_service[bp_id]).max(),
                     'metric': 'throughput',
-                    'unit': 'bytesPerSecond',
+                    'unit': 'MB/s',
                     "@timestamp": computation_timestamp,
                     'delta': delta,
                     'delta_unit': 'minutes',
