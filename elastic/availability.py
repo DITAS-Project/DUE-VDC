@@ -12,13 +12,13 @@ class Availability(Metric):
     def __init__(self, conf_path='conf/conf.json'):
         super().__init__(conf_path)
 
-    def compute_metric(self, query_content, update_interval):
+    def compute_metric(self, query_content, update_interval, update_delay):
         while True:
             try:
                 # Compute time window of interest for the query
-                t0 = datetime.now() - timedelta(minutes=1)
+                t0 = datetime.now() - timedelta(seconds=update_delay)
                 time.sleep(update_interval)
-                t1 = datetime.now() - timedelta(minutes=1)
+                t1 = datetime.now() - timedelta(seconds=update_delay)
                 # Read list of services, of which to compute the metric
                 services = utils.get_services()
                 timestamp, time_window = self.format_time_window(t0, t1)
@@ -37,4 +37,5 @@ class Availability(Metric):
         for query in queries:
             query_content = query['query_content']
             update_interval = query['update_interval']
-            threading.Thread(target=self.compute_metric, args=(query_content, update_interval)).start()
+            update_delay = query['update_delay']
+            threading.Thread(target=self.compute_metric, args=(query_content, update_interval, update_delay)).start()
