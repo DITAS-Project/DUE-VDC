@@ -1,32 +1,38 @@
 {
 	"connections": [
 		{
-			"ElasticSearchURL":"http://localhost:9200"
+			"ElasticSearchURL":"http://192.168.99.100:9200"
 		}
 	],
 	"ElasticBasicAuth": true,
-	"ElasticUser":"{{.elasticsearch_user}}",
-	"ElasticPassword":"{{.elasticsearch_password}}",
+	"ElasticUser":"admin",
+	"ElasticPassword":"password",
 	"index_qos": "tubvdc-*",
 	"index_data_quality": "tubvdc-*",
 	"availability": {
 		"queries": [
 			{
-				"query_content": "*", "update_interval": 1
+				"query_content": "*", 
+				"update_interval": 60,
+				"update_delay": 5
 			}
 		]
 	},
 	"throughput": {
 		"queries": [
 			{
-				"query_content": "*", "update_interval": 1
+				"query_content": "*", 
+				"update_interval": 60,
+				"update_delay": 5
 			}
 		]
 	},
 	"response_time": {
 		"queries": [
 			{
-				"query_content": "*", "update_interval": 1
+				"query_content": "*", 
+				"update_interval": 60,
+				"update_delay": 5
 			}
 		]
 	}
